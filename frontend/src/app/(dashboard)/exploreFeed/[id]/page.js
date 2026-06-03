@@ -11,7 +11,8 @@ import {
   CheckCircle2, 
   MessageSquare,
   AlertCircle,
-  Briefcase
+  Briefcase,
+  Users
 } from "lucide-react";
 
 const RequestDetailPage = () => {
@@ -21,6 +22,23 @@ const RequestDetailPage = () => {
 
   const item = feedItems?.find((f) => f?._id.toString() === params?.id);
 
+  // Dummy Helpers Array
+  const dummyHelpers = [
+    {
+      id: "1",
+      name: "Alex Rivera",
+      avatar: "AR",
+      role: "Full Stack Engineer",
+      joinedAt: "10m ago"
+    },
+    {
+      id: "2",
+      name: "Sarah Chen",
+      avatar: "SC",
+      role: "UI/UX Designer",
+      joinedAt: "2h ago"
+    }
+  ];
 
   if (!item) {
     return (
@@ -125,10 +143,32 @@ const RequestDetailPage = () => {
                 <CheckCircle2 size={22} /> MARK AS SOLVED
               </button>
             </div>
+            
+            {/* HELPERS CARD (UI LOOP ONLY) */}
+            <div className="bg-zinc-900/40 border border-zinc-800 p-6 rounded-[2.5rem] space-y-4">
+              <div className="flex items-center gap-2 text-zinc-400 border-b border-zinc-800 pb-3">
+                <Users size={18} className="text-indigo-400" />
+                <h5 className="font-bold text-sm uppercase tracking-wider">Helpers Active ({dummyHelpers.length})</h5>
+              </div>
+              
+              <div className="space-y-3">
+                {dummyHelpers.map((helper) => (
+                  <div key={helper.id} className="flex items-center justify-between p-3 bg-zinc-800/30 rounded-2xl border border-zinc-800/50 hover:border-zinc-700 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-sm">
+                        {helper.avatar}
+                      </div>
+                      <div>
+                        <h6 className="text-sm font-semibold text-zinc-200">{helper.name}</h6>
+                        <p className="text-xs text-zinc-500">{helper.role}</p>
+                      </div>
+                    </div>
+                    <span className="text-[10px] text-zinc-600 font-medium">{helper.joinedAt}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-            <p className="text-[10px] text-center text-zinc-600 px-4">
-              By clicking "I Can Help", you'll be connected directly with the requester to discuss the solution.
-            </p>
           </div>
         </div>
       </div>
