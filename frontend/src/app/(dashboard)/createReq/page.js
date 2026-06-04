@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useForm } from "react-hook-form";
+import { set, useForm } from "react-hook-form";
 import {
   Send,
   Tag,
@@ -21,7 +21,7 @@ import axios from "axios";
 const CreateRequest = () => {
   const [urgency, setUrgency] = useState("Medium");
 
-  const { register, handleSubmit, watch ,getValues} = useForm({
+  const { register, handleSubmit, watch, getValues, setValue } = useForm({
     defaultValues: {
       title: "",
       description: "",
@@ -39,17 +39,27 @@ const CreateRequest = () => {
     const { title, description, tags } = getValues();
 
     try {
-      const res = await axios.post("http://localhost:5000/feed/ai", {
-        title,
-        description,
-        tags,
-      },{
-        withCredentials:true
-      });
+      const res = await axios.post(
+        "http://localhost:5000/feed/ai",
+        {
+          title,
+          description,
+          tags,
+        },
+        {
+          withCredentials: true,
+        },
+      );
 
-      console.log(res.data);
+      const data = res.data;
+
+      const { improvedTitle, tags: aiTags, descriptionSuggestion } = data;
+      setValue("description", descriptionSuggestion);
+      setValue("title", improvedTitle);
+      setValue("tags", aiTags);
+
     } catch (error) {
-      console.error(error);
+      console.error(error.message);
     }
   };
   return (

@@ -42,7 +42,6 @@ export const feedCreate = async (req, res) => {
 };
 export const suggAI = async (req, res) => {
   const { description, tags, title } = req.body;
-
   const prompt = `
 You are an expert software development assistant.
 
@@ -78,20 +77,28 @@ Return ONLY valid JSON:
   "improvedTitle": "",
   "descriptionSuggestion": "",
   "tags": [],
-  "questions": [],
-  "recommendations": []
 }
+
 `;
 
   try {
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
-      contents: 'write 3 time hello world',
+      contents: prompt,
     });
+    const text = response.text;
 
-    return response.text;
+    const clean = text
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .trim();
+    const json = JSON.parse(clean);
+
+    return res.json(json);
+    
   } catch (error) {
     console.log(error.message);
+    res.send(error.message);
   }
 };
 
