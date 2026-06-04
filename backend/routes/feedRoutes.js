@@ -1,9 +1,15 @@
 import express from "express";
-import { feedCreate, feedFetch } from "../controllers/feedControllers.js";
+import {
+  feedCreate,
+  feedFetch,
+  suggAI,
+} from "../controllers/feedControllers.js";
 
 const feedRouter = express.Router();
 
 feedRouter.post("/create", feedCreate);
+
+feedRouter.post("/ai", suggAI);
 
 feedRouter.get("/fetch", feedFetch);
 

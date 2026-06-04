@@ -39,7 +39,7 @@ const RequestDetailPage = () => {
       joinedAt: "2h ago"
     }
   ];
-
+  
   if (!item) {
     return (
       <div className="min-h-screen bg-[#09090b] text-white flex flex-col items-center justify-center gap-4">
