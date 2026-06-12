@@ -37,7 +37,7 @@ const ExploreFeed = () => {
       return matchesCategory;
     });
   }, [feedItems, activeCategory, searchQuery]);
-  
+
   if (loading)
     return (
       <div className="min-h-screen flex items-center justify-center text-white">
@@ -108,7 +108,8 @@ const ExploreFeed = () => {
                 <div className="flex justify-between items-start mb-6">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-black text-white text-xl shadow-inner">
-                      {item?.user?.charAt(0).toUpperCase() || "?"}
+                      {item?.user?.charAt(0).toUpperCase() ||
+                        item?.requesterName.charAt(0)?.toUpperCase()}
                     </div>
                     <div>
                       <h4 className="font-bold text-zinc-200">{item.user}</h4>
