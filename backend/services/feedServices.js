@@ -3,29 +3,31 @@ import { Feed } from "../models/feed.model.js";
 export const feedCreateService = async (
   title,
   description,
-  user,
+  requester,
+  requesterName,
   skills,
   category,
   urgency,
   location,
 ) => {
-  // Create Feed
   const feed = await Feed.create({
     title,
     description,
-    user,
+    requester,
+    requesterName,
     skills,
     category,
     urgency,
     location,
   });
 
-  // Return Response
+  
   return {
     id: feed._id,
     title: feed.title,
     description: feed.description,
-    user: feed.user,
+    requester: feed.requester,
+    requesterName: feed.requesterName,
     skills: feed.skills,
     category: feed.category,
     urgency: feed.urgency,
@@ -33,4 +35,3 @@ export const feedCreateService = async (
     createdAt: feed.createdAt,
   };
 };
-

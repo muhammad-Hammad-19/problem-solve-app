@@ -5,27 +5,35 @@ import { feedSchemaValidation } from "../validations/feed.validation.js";
 
 export const feedCreate = async (req, res) => {
   try {
-    const { title, description, user, skills, category, urgency, location } =
-      req.body;
+    // Agar aapka auth middleware req.user set karta hai:
+    const requesterId = req.user?._id || req.user?.id; 
+    const requesterName = req.user?.name;
 
-    const { error } = feedSchemaValidation.validate(req.body);
-    // Validation
-    if (error) {
-      return res.status(400).json({
-        success: false,
-        message: error.message,
-      });
-    }
+    const {
+      title,
+      description,
+      skills, // Yeh string hogi frontend se: "React, Node"
+      tags,   // Backend me 'category' ki jagah 'tags' use karein
+      urgency,
+      location,
+    } = req.body;
 
-    // Service Call
+    // String ko Array me convert karein database ke liye
+    const skillsArray = skills ? skills.split(",").map(s => s.trim()) : [];
+    
+    // Agar frontend se sirf 1 tag aa raha hai string me, usay array bana dein
+    const tagsArray = tags ? (Array.isArray(tags) ? tags : [tags]) : [];
+
+    // Service Call me requesterId zaroor pass karein
     const result = await feedCreateService(
       title,
       description,
-      user,
-      skills,
-      category,
+      requesterId,     // NAYA: ID pass karein
+      requesterName,
+      skillsArray,     // NAYA: Array pass karein
+      tagsArray,       // NAYA: tags array pass karein
       urgency,
-      location,
+      location
     );
 
     return res.status(201).json({
@@ -40,6 +48,7 @@ export const feedCreate = async (req, res) => {
     });
   }
 };
+
 export const suggAI = async (req, res) => {
   const { description, tags, title } = req.body;
   const prompt = `
@@ -95,7 +104,6 @@ Return ONLY valid JSON:
     const json = JSON.parse(clean);
 
     return res.json(json);
-    
   } catch (error) {
     console.log(error.message);
     res.send(error.message);

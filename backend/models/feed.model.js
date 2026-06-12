@@ -2,54 +2,70 @@ import mongoose from "mongoose";
 
 const feedSchema = new mongoose.Schema(
   {
-    title: { type: String, required: true, trim: true },
-    description: { type: String, required: true, trim: true },
+    title: { 
+      type: String, 
+      required: true, 
+      trim: true 
+    },
+    description: { 
+      type: String, 
+      required: true, 
+      trim: true 
+    },
 
-    // User field ko String ke bajaye ObjectId banana behtar hai
-
-    // taake aap requester ki profile fetch kar saken
+    // Jis bande ne request add ki hai uski ID
     
     requester: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // Aapke User model ka naam
+      ref: "User",
       required: true,
     },
 
-    // Ye field store karegi ke kisne madad ki offer ki hai
+    requesterName: {
+      type: String,
+      required: true,
+      trim: true
+    },
 
+    // Shuru me koi helper nahi hoga (null), jab koi madad accept karega tab uski ID store hogi
     helper: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       default: null,
     },
-
-    // Status track karne ke liye (Sab se zaroori field)
-
+    
+    // Jab post create hogi, toh by default "In-Progress" status hoga
     status: {
       type: String,
       enum: ["Open", "In-Progress", "Solved"],
-      default: "Open",
+      default: "In-Progress", 
     },
 
-    skills: [{ type: String, required: true }],
+    skills: [{ 
+      type: String, 
+      required: true 
+    }],
 
-    category: {
+    // Tags ko array bana diya hai taake aik se zyada select ho sakein
+    tags: [{
       type: String,
       enum: ["Development", "Design", "Marketing", "Database", "DevOps"],
       required: true,
-    },
+    }],
 
     urgency: {
       type: String,
       enum: ["High", "Medium", "Low"],
       default: "Low",
     },
-    location: { type: String, default: "Remote" },
 
-    // AI Features ke liye tags (Optional but recommended)
-    tags: [String],
+    location: { 
+      type: String, 
+      default: "Remote" 
+    },
+    
   },
-  { timestamps: true },
+  { timestamps: true }, // Is se `createdAt` aur `updatedAt` khud bakhud manage ho jayenge
 );
 
 export const Feed = mongoose.model("Feed", feedSchema);

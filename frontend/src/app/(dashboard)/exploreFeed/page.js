@@ -16,20 +16,34 @@ const ExploreFeed = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const { user: feedItems, loading } = useUser();
 
-  const categories = ["All", "Development", "Design", "Marketing", "Database", "DevOps"];
+  const categories = [
+    "All",
+    "Development",
+    "Design",
+    "Marketing",
+    "Database",
+    "DevOps",
+  ];
 
   const filteredFeed = useMemo(() => {
     return (feedItems || []).filter((item) => {
-      const matchesCategory = activeCategory === "All" || item.category === activeCategory;
-      const matchesSearch = item?.skills?.some((skill) =>
-          skill?.toLowerCase().includes(searchQuery.toLowerCase())
-      ) || item?.title?.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      return matchesCategory && matchesSearch;
+      const matchesCategory =
+        activeCategory === "All" || item.category === activeCategory;
+      const matchesSearch =
+        item?.skills?.some((skill) =>
+          skill?.toLowerCase().includes(searchQuery.toLowerCase()),
+        ) || item?.title?.toLowerCase().includes(searchQuery.toLowerCase());
+
+      return matchesCategory;
     });
   }, [feedItems, activeCategory, searchQuery]);
-
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-white">Loading...</div>;
+  
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center text-white">
+        Loading...
+      </div>
+    );
 
   return (
     <div className="min-h-screen bg-[#09090b] text-zinc-100 p-6 md:p-12">
@@ -51,7 +65,10 @@ const ExploreFeed = () => {
 
         {/* Search Bar */}
         <div className="relative mb-8">
-          <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-500" size={22} />
+          <Search
+            className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-500"
+            size={22}
+          />
           <input
             type="text"
             value={searchQuery}
@@ -68,9 +85,9 @@ const ExploreFeed = () => {
               key={cat}
               onClick={() => setActiveCategory(cat)}
               className={`px-6 py-2.5 rounded-xl text-sm font-semibold border transition-all whitespace-nowrap ${
-                activeCategory === cat 
-                ? "bg-white text-black border-white shadow-lg shadow-white/10" 
-                : "bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:border-zinc-600"
+                activeCategory === cat
+                  ? "bg-white text-black border-white shadow-lg shadow-white/10"
+                  : "bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:border-zinc-600"
               }`}
             >
               {cat}
@@ -81,47 +98,62 @@ const ExploreFeed = () => {
 
       {/* Feed Grid */}
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
-        {filteredFeed.length > 0 ? (
-          filteredFeed.map((item) => (
+        {filteredFeed?.length > 0 ? (
+          filteredFeed?.map((item) => (
             <div
-              key={item._id}
+              key={item?._id}
               className="group bg-zinc-900/30 border border-zinc-800/50 p-7 rounded-[2rem] hover:bg-zinc-900/60 hover:border-zinc-700 transition-all flex flex-col justify-between"
             >
               <div>
                 <div className="flex justify-between items-start mb-6">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-black text-white text-xl shadow-inner">
-                      {item.user[0].toUpperCase()}
+                      {item?.user?.charAt(0).toUpperCase() || "?"}
                     </div>
                     <div>
                       <h4 className="font-bold text-zinc-200">{item.user}</h4>
                       <div className="flex items-center gap-3 text-xs text-zinc-500 mt-1">
-                        <span className="flex items-center gap-1"><Clock size={12} /> {item.posted}</span>
-                        <span className="flex items-center gap-1"><MapPin size={12} /> {item.location || 'Remote'}</span>
+                        <span className="flex items-center gap-1">
+                          <Clock size={12} /> {item.posted}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <MapPin size={12} /> {item.location || "Remote"}
+                        </span>
                       </div>
                     </div>
                   </div>
-                  <span className={`text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-tighter ${
-                    item.urgency === "High" ? "bg-red-500/10 text-red-500 border border-red-500/20" : "bg-zinc-800 text-zinc-400"
-                  }`}>
-                    {item.urgency}
+                  <span
+                    className={`text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-tighter ${
+                      item?.urgency === "High"
+                        ? "bg-red-500/10 text-red-500 border border-red-500/20"
+                        : "bg-zinc-800 text-zinc-400"
+                    }`}
+                  >
+                    {item?.urgency}
                   </span>
                 </div>
 
                 <h3 className="text-2xl font-bold mb-3 leading-tight group-hover:text-indigo-400 transition-colors">
-                  {item.title}
+                  {item?.title}
                 </h3>
                 <p className="text-zinc-400 text-sm leading-relaxed mb-6 line-clamp-2">
-                  {item.description}
+                  {item?.description}
                 </p>
 
                 <div className="flex flex-wrap gap-2 mb-8">
-                  {item.skills.slice(0, 3).map((skill) => (
-                    <span key={skill} className="text-[11px] bg-zinc-800/50 text-zinc-300 border border-zinc-700/50 px-3 py-1 rounded-lg flex items-center gap-1">
+                  {item?.skills.slice(0, 3).map((skill) => (
+                    <span
+                      key={skill}
+                      className="text-[11px] bg-zinc-800/50 text-zinc-300 border border-zinc-700/50 px-3 py-1 rounded-lg flex items-center gap-1"
+                    >
                       <Code2 size={12} className="text-indigo-500" /> {skill}
                     </span>
                   ))}
-                  {item.skills.length > 3 && <span className="text-[11px] text-zinc-500">+{item.skills.length - 3} more</span>}
+                  {item.skills.length > 3 && (
+                    <span className="text-[11px] text-zinc-500">
+                      +{item.skills.length - 3} more
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -135,7 +167,9 @@ const ExploreFeed = () => {
           ))
         ) : (
           <div className="col-span-full py-20 text-center border-2 border-dashed border-zinc-800 rounded-[3rem]">
-            <p className="text-zinc-500 text-lg">No requests match your current filters.</p>
+            <p className="text-zinc-500 text-lg">
+              No requests match your current filters.
+            </p>
           </div>
         )}
       </div>

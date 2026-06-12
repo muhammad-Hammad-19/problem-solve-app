@@ -10,7 +10,7 @@ const loginServices = async (email, password) => {
     }
 
     const user = users[0];
-    const { role } = user;
+    const { name, role } = user;
 
     const isPasswordMatch = await bcrypt.compare(password, user.password);
 
@@ -18,7 +18,16 @@ const loginServices = async (email, password) => {
       throw new Error("Invalid password");
     }
 
-    const token = jwt.sign({ email, role }, process.env.JWT_SECRET);
+    const token = jwt.sign(
+      {
+        _id: user._id,
+        email: user.email,
+        role: user.role,
+        name: user.name,
+      },
+      process.env.JWT_SECRET,
+    );
+    
     // 5. Return success response
 
     return {

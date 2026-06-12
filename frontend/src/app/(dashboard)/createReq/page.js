@@ -9,8 +9,6 @@ import {
   Sparkles,
   Type,
   AlignLeft,
-  Lightbulb,
-  CheckCircle2,
   Bot,
   Zap,
   Activity,
@@ -19,20 +17,40 @@ import {
 import axios from "axios";
 
 const CreateRequest = () => {
-  const [urgency, setUrgency] = useState("Medium");
+const [urgency, setUrgency] = useState("Medium");
 
-  const { register, handleSubmit, watch, getValues, setValue } = useForm({
+  const { register, handleSubmit, watch, getValues, setValue, reset } = useForm({
     defaultValues: {
       title: "",
       description: "",
-      tags: "",
+      tags: "Development", // Default enum value
+      skills: "",          // NAYA: Skills add kiya
     },
   });
-
+  
   const formValues = watch();
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     console.log({ ...data, urgency });
+    try {
+      const res = await axios.post(
+        "http://localhost:5000/feed/create",
+        {
+          ...data,
+        },
+        {
+          withCredentials: true,
+        },
+      );
+      const dataSucess = res.data.success;
+
+      if (dataSucess === true) {
+        console.log(data.message);
+        reset();
+      }
+    } catch (err) {
+      console.log(err.message);
+    }
   };
 
   const handleAiRes = async () => {
@@ -57,7 +75,6 @@ const CreateRequest = () => {
       setValue("description", descriptionSuggestion);
       setValue("title", improvedTitle);
       setValue("tags", aiTags);
-
     } catch (error) {
       console.error(error.message);
     }

@@ -4,13 +4,14 @@ import {
   feedFetch,
   suggAI,
 } from "../controllers/feedControllers.js";
+import authMiddleware from "../middlewares/authMiddleware.js";
 
 const feedRouter = express.Router();
 
-feedRouter.post("/create", feedCreate);
+feedRouter.post("/create", authMiddleware, feedCreate);
 
-feedRouter.post("/ai", suggAI);
+feedRouter.post("/ai", authMiddleware, suggAI);
 
-feedRouter.get("/fetch", feedFetch);
+feedRouter.get("/fetch", authMiddleware, feedFetch);
 
 export default feedRouter;
