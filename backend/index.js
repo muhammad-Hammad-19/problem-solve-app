@@ -5,6 +5,7 @@ import { connectDB } from "./db/db.js";
 import authRouter from "./routes/authRoutes.js";
 import cookieParser from "cookie-parser";
 import feedRouter from "./routes/feedRoutes.js";
+import userRouter from "./routes/userRoutes.js";
 
 dotenv.config();
 
@@ -14,13 +15,11 @@ const PORT = process.env.PORT || 5000;
 
 app.use(cookieParser());
 
-
 app.use(
   cors({
     origin: "http://localhost:3000",
     credentials: true,
   }),
-
 );
 
 app.use(express.json());
@@ -28,6 +27,9 @@ app.use(express.json());
 app.use("/auth", authRouter);
 
 app.use("/feed", feedRouter);
+
+app.use("/user", userRouter);
+
 connectDB();
 
 app.get("/", (req, res) => {

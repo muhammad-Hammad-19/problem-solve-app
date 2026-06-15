@@ -105,7 +105,7 @@ const RequestDetailPage = () => {
                 <Code2 size={22} className="text-indigo-500" /> Required
                 Expertise
               </h3>
-              
+
               <div className="flex flex-wrap gap-3">
                 {item.skills.map((skill) => (
                   <span
@@ -124,7 +124,8 @@ const RequestDetailPage = () => {
             {/* User Profile Card */}
             <div className="bg-zinc-900/40 border border-zinc-800 p-6 rounded-[2.5rem] text-center">
               <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-3xl font-black mb-4 shadow-xl">
-                {item.user?.charAt(0)?.toUpperCase() || item?.requesterName.charAt(0)?.toUpperCase()}
+                {item.user?.charAt(0)?.toUpperCase() ||
+                  item?.requesterName.charAt(0)?.toUpperCase()}
               </div>
               <h4 className="text-xl font-bold">{item.user}</h4>
               <p className="text-zinc-500 text-sm mb-6 flex items-center justify-center gap-1">

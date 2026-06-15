@@ -29,13 +29,15 @@ const ExploreFeed = () => {
     return (feedItems || []).filter((item) => {
       const matchesCategory =
         activeCategory === "All" || item.category === activeCategory;
+
       const matchesSearch =
         item?.skills?.some((skill) =>
           skill?.toLowerCase().includes(searchQuery.toLowerCase()),
         ) || item?.title?.toLowerCase().includes(searchQuery.toLowerCase());
 
-      return matchesCategory;
+      return matchesCategory && matchesSearch;
     });
+
   }, [feedItems, activeCategory, searchQuery]);
 
   if (loading)
