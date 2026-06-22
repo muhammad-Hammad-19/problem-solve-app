@@ -6,10 +6,21 @@ import authRouter from "./routes/authRoutes.js";
 import cookieParser from "cookie-parser";
 import feedRouter from "./routes/feedRoutes.js";
 import userRouter from "./routes/userRoutes.js";
+import { createServer } from "node:http";
+import { Server } from "socket.io";
 
 dotenv.config();
 
 const app = express();
+const server = createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3000",
+    credentials: true,
+    methods: ["GET", "POST"],
+  },
+});
 
 const PORT = process.env.PORT || 5000;
 
@@ -36,6 +47,41 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
+const users = {};
+
+io.on("connection", (socket) => {
+  socket.on("login-user", (userId) => {
+
+    users[userId] = socket.id;
+    
+  });
+
+  socket.on("chat-message", (msg) => {
+
+    const { recevierId } = msg;
+
+    let receiverSocketId = users[recevierId];
+
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("chat-message", msg);
+    }
+  });
+
+  socket.on("disconnect", () => {
+    for (let userId in users) {
+      if (users[userId] === socket.id) {
+        delete users[userId];
+        console.log("User disconnected:", userId);
+        break;
+      }
+    }
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+});
+
+server.listen(8000, () => {
+  console.log(`Socket Server running on port ${PORT}`);
 });
