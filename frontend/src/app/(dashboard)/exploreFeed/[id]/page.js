@@ -12,6 +12,7 @@ import {
   Briefcase,
   Users,
 } from "lucide-react";
+import axios from "axios";
 
 const RequestDetailPage = () => {
   const params = useParams();
@@ -38,6 +39,20 @@ const RequestDetailPage = () => {
       joinedAt: "2h ago",
     },
   ];
+  const handleHelperReq = async (postId) => {
+    try {
+      const response = await axios.post(
+        `http://localhost:5000/request/send/${postId}`,
+        {},
+        {
+          withCredentials: true,
+        },
+      );
+      console.log(response.data);
+    } catch (error) {
+      console.error(error.response?.data || error.message);
+    }
+  };
 
   if (!item) {
     return (
@@ -149,7 +164,10 @@ const RequestDetailPage = () => {
 
             {/* ACTION BUTTONS */}
             <div className="space-y-3">
-              <button className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-5 rounded-[1.5rem] font-black flex items-center justify-center gap-3 transition-all shadow-lg shadow-indigo-600/20 active:scale-95 group">
+              <button
+                onClick={() => handleHelperReq(item?._id)}
+                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-5 rounded-[1.5rem] font-black flex items-center justify-center gap-3 transition-all shadow-lg shadow-indigo-600/20 active:scale-95 group"
+              >
                 <MessageSquare
                   size={22}
                   className="group-hover:animate-bounce"

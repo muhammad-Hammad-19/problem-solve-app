@@ -11,7 +11,7 @@ export const UserProvider = ({ children }) => {
   const fetchUser = async () => {
     try {
       setLoading(true);
-      
+
       const res = await axios.get("http://localhost:5000/feed/fetch", {
         withCredentials: true,
       });

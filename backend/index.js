@@ -8,6 +8,7 @@ import feedRouter from "./routes/feedRoutes.js";
 import userRouter from "./routes/userRoutes.js";
 import { createServer } from "node:http";
 import { Server } from "socket.io";
+import requestRouter from "./routes/requestRoutes.js";
 
 dotenv.config();
 
@@ -41,6 +42,8 @@ app.use("/feed", feedRouter);
 
 app.use("/user", userRouter);
 
+app.use("/request", requestRouter);
+
 connectDB();
 
 app.get("/", (req, res) => {
@@ -51,13 +54,10 @@ const users = {};
 
 io.on("connection", (socket) => {
   socket.on("login-user", (userId) => {
-
     users[userId] = socket.id;
-    
   });
 
   socket.on("chat-message", (msg) => {
-
     const { recevierId } = msg;
 
     let receiverSocketId = users[recevierId];

@@ -9,4 +9,5 @@ const userRouter = express.Router();
 userRouter.get("/", authMiddleware, getAllUsers);
 
 userRouter.get("/getUser", authMiddleware, getUser);
+
 export default userRouter;

@@ -7,6 +7,7 @@ import axios from "axios";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
+
 const Login = () => {
   const router = useRouter();
   const {
@@ -37,6 +38,7 @@ const Login = () => {
       }, 2500);
     } catch (error) {
       console.log(error.response?.data || error.message);
+      toast.error(error.response?.data?.message || "Something went wrong");
     }
   };
 
@@ -80,7 +82,7 @@ const Login = () => {
                     message: "Enter a valid email",
                   },
                 })}
-                className={`w-full pl-12 pr-4 py-4 bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all font-medium ${
+                className={`w-full pl-12 pr-4 py-4 bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all font-medium text-slate-950 placeholder:text-slate-400 ${
                   errors.email
                     ? "border-red-400 focus:ring-red-200 focus:border-red-500"
                     : "border-slate-100 focus:ring-indigo-500/20 focus:border-indigo-500"
@@ -113,7 +115,7 @@ const Login = () => {
                     message: "Password must be at least 6 characters",
                   },
                 })}
-                className={`w-full pl-12 pr-4 py-4 bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all font-medium ${
+                className={`w-full pl-12 pr-4 py-4 bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all font-medium text-slate-950 placeholder:text-slate-400 ${
                   errors.password
                     ? "border-red-400 focus:ring-red-200 focus:border-red-500"
                     : "border-slate-100 focus:ring-indigo-500/20 focus:border-indigo-500"

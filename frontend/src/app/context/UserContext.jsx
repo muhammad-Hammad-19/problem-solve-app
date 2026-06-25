@@ -20,7 +20,7 @@ export const UsersFetchProvider = ({ children }) => {
           withCredentials: true,
         });
 
-        const resData = response.data;  // Axios mein data 'response.data' mein hota ha
+        const resData = response.data; // Axios mein data 'response.data' mein hota ha
 
         // Agar aapka backend data ko "data" key ke andar bhej raha hai (e.g., res.json({ data: [...] }))
         if (resData && resData.data) {
@@ -30,6 +30,7 @@ export const UsersFetchProvider = ({ children }) => {
           setUsers(resData);
         }
       } catch (error) {
+        setUsers(null);
         console.error("Error fetching users:", error.message);
       } finally {
         setIsLoading(false);
