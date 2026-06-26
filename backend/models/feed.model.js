@@ -24,7 +24,7 @@ const feedSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    
+
     status: {
       type: String,
       enum: ["Open", "In-Progress", "Solved"],
@@ -35,6 +35,13 @@ const feedSchema = new mongoose.Schema(
       {
         type: String,
         required: true,
+      },
+    ],
+    
+    helpers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Helper",
       },
     ],
 
