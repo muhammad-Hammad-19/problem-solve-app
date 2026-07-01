@@ -17,6 +17,7 @@ const protectMiddleware = (req, res) => {
       s: true,
       user: req?.user,
     });
+
   } catch (error) {
     return res.status(403).json({ message: "Invalid or expired token" });
   }

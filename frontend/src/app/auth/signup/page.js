@@ -4,6 +4,8 @@ import { User, Mail, Lock, ArrowRight, Rocket } from "lucide-react";
 import axios from "axios";
 import { useForm, Controller } from "react-hook-form";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { toast } from "react-toastify"; // Toast import takay error na aaye
 
 const Signup = () => {
   const router = useRouter();
@@ -13,7 +15,8 @@ const Signup = () => {
     handleSubmit,
     formState: { errors },
   } = useForm({
-    defaultValue: {
+    defaultValues: {
+      // Fixed: Changed from 'defaultValue' to 'defaultValues'
       name: "",
       email: "",
       password: "",
@@ -23,7 +26,6 @@ const Signup = () => {
 
   const onSubmit = async (data) => {
     try {
-      console.log(data);
 
       const res = await axios.post(
         "http://localhost:5000/auth/register",
@@ -36,12 +38,15 @@ const Signup = () => {
         },
       );
 
-      toast.success(res.data.message);
+      toast.success(res.data.message || "Account created successfully!");
+
       setTimeout(() => {
-        router.push("/dashboard");
+        router.push("/auth/login");
       }, 2500);
+      
     } catch (error) {
       console.log(error.response?.data || error.message);
+      toast.error(error.response?.data?.message || "Something went wrong");
     }
   };
 
@@ -79,17 +84,17 @@ const Signup = () => {
                 })}
                 type="text"
                 placeholder="Full Name"
-                className={`w-full pl-12 pr-4 py-4 bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all font-medium ${
-                  errors.fullName
+                className={`w-full pl-12 pr-4 py-4 bg-slate-50 text-slate-900 border rounded-2xl focus:outline-none focus:ring-2 transition-all font-medium ${
+                  errors.name // Fixed: errors.fullName se badal kar errors.name kiya
                     ? "border-red-400 focus:ring-red-200 focus:border-red-500"
                     : "border-slate-100 focus:ring-indigo-500/20 focus:border-indigo-500"
                 }`}
               />
             </div>
 
-            {errors.fullName && (
+            {errors.name && (
               <p className="text-red-500 text-sm mt-2 ml-1">
-                {errors.fullName.message}
+                {errors.name.message}
               </p>
             )}
           </div>
@@ -112,7 +117,7 @@ const Signup = () => {
                   },
                 })}
                 placeholder="Email Address"
-                className={`w-full pl-12 pr-4 py-4 bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all font-medium ${
+                className={`w-full pl-12 pr-4 py-4 bg-slate-50 text-slate-900 border rounded-2xl focus:outline-none focus:ring-2 transition-all font-medium ${
                   errors.email
                     ? "border-red-400 focus:ring-red-200 focus:border-red-500"
                     : "border-slate-100 focus:ring-indigo-500/20 focus:border-indigo-500"
@@ -145,7 +150,7 @@ const Signup = () => {
                   },
                 })}
                 placeholder="Password"
-                className={`w-full pl-12 pr-4 py-4 bg-slate-50 border rounded-2xl focus:outline-none focus:ring-2 transition-all font-medium ${
+                className={`w-full pl-12 pr-4 py-4 bg-slate-50 text-slate-900 border rounded-2xl focus:outline-none focus:ring-2 transition-all font-medium ${
                   errors.password
                     ? "border-red-400 focus:ring-red-200 focus:border-red-500"
                     : "border-slate-100 focus:ring-indigo-500/20 focus:border-indigo-500"
@@ -161,32 +166,36 @@ const Signup = () => {
           </div>
 
           {/* Role Selection */}
-          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider ml-1">
-            I want to:
-          </label>
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider ml-1">
+              I want to:
+            </label>
 
-          <Controller
-            name="role"
-            control={control}
-            rules={{ required: "Please select an option" }}
-            render={({ field }) => (
-              <select
-                {...field}
-                className="w-full py-3 px-4 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="">Select an option</option>
-                <option value="Need help">Need Help</option>
-                <option value="Can help">Can Help</option>
-                <option value="Both">Both</option>
-              </select>
+            <Controller
+              name="role"
+              control={control}
+              rules={{ required: "Please select an option" }}
+              render={({ field }) => (
+                <select
+                  {...field}
+                  className="w-full py-4 px-4 rounded-2xl border border-slate-100 bg-slate-50 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                >
+                  <option value="">Select an option</option>
+                  <option value="Need help">Need Help</option>
+                  <option value="Can help">Can Help</option>
+                  <option value="Both">Both</option>
+                </select>
+              )}
+            />
+
+            {errors.role && (
+              <p className="text-red-500 text-sm mt-1 ml-1">
+                {errors.role.message}
+              </p>
             )}
-          />
+          </div>
 
-          {errors.role && (
-            <p className="text-red-500 text-xs ml-1">{errors.role.message}</p>
-          )}
-
-          <button className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 group mt-4">
+          <button className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 group mt-6">
             Create Account
             <ArrowRight
               size={18}
@@ -197,9 +206,12 @@ const Signup = () => {
 
         <p className="mt-8 text-center text-slate-500 text-sm font-medium">
           Already a member?{" "}
-          <a href="/login" className="text-indigo-600 font-bold">
+          <Link
+            href="/auth/login"
+            className="text-indigo-600 font-bold hover:underline"
+          >
             Log in
-          </a>
+          </Link>
         </p>
       </motion.div>
     </div>

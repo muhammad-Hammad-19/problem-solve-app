@@ -13,6 +13,7 @@ const Login = () => {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm({
     defaultValues: {
@@ -31,11 +32,16 @@ const Login = () => {
           "Content-Type": "application/json",
         },
       });
-    
+
       toast.success(res.data.message);
+
+      localStorage.setItem("user", JSON.stringify(res.data.data));
+
       setTimeout(() => {
         router.push("/dashboard");
       }, 2500);
+
+      reset();
     } catch (error) {
       console.log(error.response?.data || error.message);
       toast.error(error.response?.data?.message || "Something went wrong");
@@ -158,7 +164,7 @@ const Login = () => {
         {/* Footer */}
         <p className="mt-8 text-center text-slate-500 text-sm font-medium">
           New to the community?{" "}
-          <a href="/signup" className="text-indigo-600 font-bold">
+          <a href="/auth/signup" className="text-indigo-600 font-bold">
             Create Account
           </a>
         </p>

@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import {
   ArrowRight,
   Zap,
@@ -8,7 +9,8 @@ import {
   MessageSquare,
   Search,
 } from "lucide-react";
-import { motion } from "framer-motion"; // For that premium smooth feel
+
+import { motion } from "framer-motion";
 
 const LandingPage = () => {
   return (
@@ -16,6 +18,7 @@ const LandingPage = () => {
       {/* --- Navbar --- */}
       <nav className="fixed top-0 w-full z-50 border-b border-gray-100 bg-white/70 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+          {/* Logo */}
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-200">
               <Zap size={20} className="text-white fill-current" />
@@ -26,34 +29,20 @@ const LandingPage = () => {
             </span>
           </div>
 
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
-            <a
-              href="#explore"
-              className="hover:text-indigo-600 transition-colors"
-            >
-              Explore Feed
-            </a>
-            <a
-              href="#leaderboard"
-              className="hover:text-indigo-600 transition-colors"
-            >
-              Leaderboard
-            </a>
-            <a
-              href="#ai-center"
-              className="hover:text-indigo-600 transition-colors"
-            >
-              AI Insights
-            </a>
-          </div>
-
+          {/* Auth Action Buttons */}
           <div className="flex items-center gap-4">
-            <button className="text-sm font-semibold text-slate-600 hover:text-indigo-600">
+            <Link
+              href="/auth/login"
+              className="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors"
+            >
               Sign in
-            </button>
-            <button className="bg-slate-900 text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-indigo-600 transition-all shadow-md active:scale-95">
+            </Link>
+            <Link
+              href="/auth/signup"
+              className="bg-slate-900 text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-indigo-600 transition-all shadow-md active:scale-95"
+            >
               Get Started
-            </button>
+            </Link>
           </div>
         </div>
       </nav>
@@ -77,7 +66,7 @@ const LandingPage = () => {
             className="text-6xl md:text-8xl font-bold tracking-tight text-slate-900 mb-8 leading-[0.95]"
           >
             Empowering <br />
-            <span className="text-indigo-600 italic">SMIT</span> Learners.
+            <span className="text-indigo-600 italic">Community</span> Solvers.
           </motion.h1>
 
           <motion.p
@@ -97,17 +86,23 @@ const LandingPage = () => {
             transition={{ delay: 0.3 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-5"
           >
-            <button className="w-full sm:w-auto bg-indigo-600 text-white px-8 py-4 rounded-2xl font-bold shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2">
+            <Link
+              href="/auth/signup"
+              className="w-full sm:w-auto bg-indigo-600 text-white px-8 py-4 rounded-2xl font-bold shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2"
+            >
               Create Request <ArrowRight size={18} />
-            </button>
-            <button className="w-full sm:w-auto bg-white text-slate-700 border border-slate-200 px-8 py-4 rounded-2xl font-bold hover:bg-slate-50 transition-all">
+            </Link>
+            <Link
+              href="/auth/signup"
+              className="w-full sm:w-auto bg-white text-slate-700 border border-slate-200 px-8 py-4 rounded-2xl font-bold hover:bg-slate-50 transition-all text-center"
+            >
               Explore Skills
-            </button>
+            </Link>
           </motion.div>
         </div>
       </section>
 
-      {/* --- Live Preview Card (Product Thinking) --- */}
+      {/* --- Live Preview Card --- */}
       <section className="max-w-6xl mx-auto px-6 mb-32">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
@@ -116,7 +111,6 @@ const LandingPage = () => {
           className="bg-white rounded-[40px] border border-slate-200 p-4 shadow-2xl"
         >
           <div className="bg-slate-50 rounded-[32px] p-8 md:p-12 overflow-hidden relative">
-            {/* Header of Feed */}
             <div className="flex items-center justify-between mb-8">
               <div className="flex gap-2">
                 <div className="h-3 w-3 rounded-full bg-slate-200"></div>
@@ -128,7 +122,6 @@ const LandingPage = () => {
               </div>
             </div>
 
-            {/* Dummy Request Item */}
             <div className="grid md:grid-cols-2 gap-8">
               <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
                 <div className="flex items-center gap-3 mb-4">
@@ -153,7 +146,6 @@ const LandingPage = () => {
                 </div>
               </div>
 
-              {/* AI Insight Box */}
               <div className="bg-indigo-600 p-8 rounded-3xl text-white">
                 <BarChart3 className="mb-4 opacity-70" />
                 <h3 className="text-xl font-bold mb-2">AI Match Insight</h3>
@@ -208,8 +200,8 @@ const LandingPage = () => {
               Leaderboard Ranking
             </h3>
             <p className="text-slate-500 text-sm leading-relaxed">
-              Stay motivated! Compete with the best helpers in SMIT and earn a
-              spot on our global leaderboard with exclusive rewards.
+              Stay motivated! Compete with the best helpers in the community and
+              earn a spot on our global leaderboard with exclusive rewards.
             </p>
           </div>
         </div>
@@ -218,7 +210,7 @@ const LandingPage = () => {
       {/* --- Footer --- */}
       <footer className="py-20 border-t border-slate-100 text-center">
         <p className="text-slate-400 text-xs font-medium uppercase tracking-[3px]">
-          SMIT GRAND CODING NIGHT 2026
+          © 2026 HELPHYTICS AI • ALL RIGHTS RESERVED
         </p>
       </footer>
     </div>
