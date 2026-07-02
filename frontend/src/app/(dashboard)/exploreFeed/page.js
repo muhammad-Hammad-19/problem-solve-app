@@ -9,12 +9,13 @@ import {
   ArrowRight,
   Sparkles,
 } from "lucide-react";
-import { useUser } from "@/app/context/UserProvider";
+import { useUsersFeeds } from "@/app/context/UserFeedContext";
 
 const ExploreFeed = () => {
   const [activeCategory, setActiveCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
-  const { user: feedItems, loading } = useUser();
+
+  const { feeds, loading } = useUsersFeeds();
 
   const categories = [
     "All",
@@ -26,7 +27,7 @@ const ExploreFeed = () => {
   ];
 
   const filteredFeed = useMemo(() => {
-    return (feedItems || []).filter((item) => {
+    return (feeds || []).filter((item) => {
       const matchesCategory =
         activeCategory === "All" || item.category === activeCategory;
 
@@ -37,8 +38,7 @@ const ExploreFeed = () => {
 
       return matchesCategory && matchesSearch;
     });
-
-  }, [feedItems, activeCategory, searchQuery]);
+  }, [feeds, activeCategory, searchQuery]);
 
   if (loading)
     return (

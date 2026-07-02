@@ -83,5 +83,5 @@ app.listen(PORT, () => {
 });
 
 server.listen(8000, () => {
-  console.log(`Socket Server running on port ${PORT}`);
+  console.log(`Socket Server running on port 8000`);
 });

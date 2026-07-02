@@ -7,8 +7,6 @@ authRouter.post("/login", login);
 
 authRouter.post("/register", register);
 
-authRouter.get("/check", protectMiddleware);
-
-authRouter.delete("/logout", logout);
+authRouter.post("/logout", logout);
 
 export default authRouter;

@@ -1,12 +1,17 @@
 import React from "react";
-import { UserProvider } from "../context/UserProvider";
-import { UsersFetchProvider } from "../context/UserContext";
+import { UsersFetchProvider } from "../context/UsersContext";
+import { UserFeedProvider } from "../context/UserFeedContext";
+import { CurrentUserProvider } from "../context/CurrentUserContext";
 
 const Providers = ({ children }) => {
   return (
-    <UserProvider>
-      <UsersFetchProvider>{children}</UsersFetchProvider>
-    </UserProvider>
+    <CurrentUserProvider>
+      <UserFeedProvider>
+        <UsersFetchProvider>
+          {children}
+        </UsersFetchProvider>
+      </UserFeedProvider>
+    </CurrentUserProvider>
   );
 };
 

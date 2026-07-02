@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = "force-dynamic";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -11,8 +12,10 @@ import {
 } from "lucide-react";
 
 import { motion } from "framer-motion";
-
+import { useCurrentUser } from "./context/CurrentUserContext";
 const LandingPage = () => {
+  const { currentUser: user } = useCurrentUser();
+
   return (
     <div className="min-h-screen bg-[#fafafa] text-slate-900 selection:bg-indigo-100">
       {/* --- Navbar --- */}
@@ -31,18 +34,21 @@ const LandingPage = () => {
 
           {/* Auth Action Buttons */}
           <div className="flex items-center gap-4">
-            <Link
-              href="/auth/login"
-              className="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors"
-            >
-              Sign in
-            </Link>
-            <Link
-              href="/auth/signup"
-              className="bg-slate-900 text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-indigo-600 transition-all shadow-md active:scale-95"
-            >
-              Get Started
-            </Link>
+            {user ? (
+              <Link
+                href="/dashboard"
+                className="bg-slate-900 text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-indigo-600 transition-all shadow-md active:scale-95"
+              >
+                Dashboard
+              </Link>
+            ) : (
+              <Link
+                href="/auth/login"
+                className="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors"
+              >
+                Sign in
+              </Link>
+            )}
           </div>
         </div>
       </nav>
@@ -86,17 +92,21 @@ const LandingPage = () => {
             transition={{ delay: 0.3 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-5"
           >
+            {/* Conditional Logic for Main Button */}
             <Link
-              href="/auth/signup"
+              href={user ? "/dashboard" : "/auth/signup"}
               className="w-full sm:w-auto bg-indigo-600 text-white px-8 py-4 rounded-2xl font-bold shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2"
             >
-              Create Request <ArrowRight size={18} />
+              {user ? "Go to Dashboard" : "Create Request"}{" "}
+              <ArrowRight size={18} />
             </Link>
+
+            {/* Conditional Logic for Secondary Button */}
             <Link
-              href="/auth/signup"
+              href={user ? "/dashboard" : "/auth/signup"}
               className="w-full sm:w-auto bg-white text-slate-700 border border-slate-200 px-8 py-4 rounded-2xl font-bold hover:bg-slate-50 transition-all text-center"
             >
-              Explore Skills
+              {user ? "Explore Requests" : "Explore Skills"}
             </Link>
           </motion.div>
         </div>

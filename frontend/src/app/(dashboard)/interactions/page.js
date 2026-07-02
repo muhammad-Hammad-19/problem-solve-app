@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { Loader2, Send, Search, Phone, Video, Info, Paperclip, Smile, MessageSquare } from "lucide-react";
-import { useUserFetch } from "@/app/context/UserContext";
+import { useUserFetch } from "@/app/context/UsersContext";
 import { socket } from "@/app/lib/socket.js";
 import axios from "axios";
 
