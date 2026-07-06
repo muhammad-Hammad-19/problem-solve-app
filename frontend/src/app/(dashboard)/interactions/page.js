@@ -1,13 +1,23 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Loader2, Send, Search, Phone, Video, Info, Paperclip, Smile, MessageSquare } from "lucide-react";
-import { useUserFetch } from "@/app/context/UsersContext";
+import {
+  Loader2,
+  Send,
+  Search,
+  Phone,
+  Video,
+  Info,
+  Paperclip,
+  Smile,
+  MessageSquare,
+} from "lucide-react";
 import { socket } from "@/app/lib/socket.js";
 import axios from "axios";
+import { useUsersFetch } from "@/app/context/UsersContext";
 
 export default function CompleteChatAppPage() {
-  const { users, loading: isLoading } = useUserFetch();
+  const { users, loading: isLoading } = useUsersFetch();
   const [activeChatId, setActiveChatId] = useState("");
   const [currentUserId, setCurrentUserId] = useState("");
   const [inputText, setInputText] = useState("");
@@ -25,7 +35,7 @@ export default function CompleteChatAppPage() {
     };
     getUser();
   }, []);
-
+  
   // Socket login
   useEffect(() => {
     if (!currentUserId) return;
@@ -66,7 +76,7 @@ export default function CompleteChatAppPage() {
 
   // Filter users based on search
   const filteredUsers = users?.filter((user) =>
-    user.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    user.name?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   // Message send karo
@@ -108,7 +118,6 @@ export default function CompleteChatAppPage() {
   return (
     <div className="min-h-screen bg-[#09090b] text-zinc-100 p-2 sm:p-4 md:p-6 flex justify-center items-center font-sans selection:bg-indigo-500/30">
       <div className="w-full max-w-6xl h-[85vh] grid grid-cols-1 md:grid-cols-3 bg-zinc-900/20 border border-zinc-800/80 rounded-[24px] overflow-hidden shadow-2xl backdrop-blur-xl">
-        
         {/* LEFT: USERS SIDEBAR */}
         <div className="border-r border-zinc-800/60 bg-zinc-950/40 flex flex-col h-full">
           {/* Sidebar Header */}
@@ -121,10 +130,13 @@ export default function CompleteChatAppPage() {
                 {users?.length || 0} online
               </span>
             </div>
-            
+
             {/* Search Bar */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={15} />
+              <Search
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500"
+                size={15}
+              />
               <input
                 type="text"
                 placeholder="Search conversations..."
@@ -154,11 +166,13 @@ export default function CompleteChatAppPage() {
                 >
                   {/* User Initial Avatar */}
                   <div className="relative shrink-0">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold border transition-colors ${
-                      isSelected 
-                        ? "bg-indigo-600/20 border-indigo-500/40 text-indigo-400" 
-                        : "bg-zinc-900 border-zinc-800 text-zinc-300"
-                    }`}>
+                    <div
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold border transition-colors ${
+                        isSelected
+                          ? "bg-indigo-600/20 border-indigo-500/40 text-indigo-400"
+                          : "bg-zinc-900 border-zinc-800 text-zinc-300"
+                      }`}
+                    >
                       {user.name?.charAt(0).toUpperCase()}
                     </div>
                     <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-[#09090b]" />
@@ -167,28 +181,31 @@ export default function CompleteChatAppPage() {
                   {/* Meta Details */}
                   <div className="flex-1 min-w-0 flex flex-col gap-0.5">
                     <div className="flex items-center justify-between">
-                      <span className={`text-xs font-semibold truncate ${isSelected ? "text-indigo-400" : "text-zinc-200"}`}>
+                      <span
+                        className={`text-xs font-semibold truncate ${isSelected ? "text-indigo-400" : "text-zinc-200"}`}
+                      >
                         {user.name}
                       </span>
                       {lastMsg && !isSelected && (
                         <span className="w-2 h-2 rounded-full bg-indigo-500 shrink-0 animation-pulse" />
                       )}
                     </div>
-                    
+
                     {/* Last message preview */}
                     <p className="text-[11px] text-zinc-500 truncate font-medium">
-                      {lastMsg 
+                      {lastMsg
                         ? `${lastMsg.type === "sent" ? "You: " : ""}${lastMsg.text}`
-                        : user.email
-                      }
+                        : user.email}
                     </p>
                   </div>
                 </div>
               );
             })}
-            
+
             {filteredUsers?.length === 0 && (
-              <p className="text-center text-xs text-zinc-600 mt-4">No users found</p>
+              <p className="text-center text-xs text-zinc-600 mt-4">
+                No users found
+              </p>
             )}
           </div>
         </div>
@@ -268,10 +285,13 @@ export default function CompleteChatAppPage() {
                 className="p-4 bg-zinc-950/40 border-t border-zinc-800/60 flex items-center gap-2"
               >
                 <div className="flex-1 bg-zinc-900/60 border border-zinc-800/80 rounded-xl px-3 py-2 flex items-center gap-2 focus-within:border-indigo-500/80 focus-within:ring-1 focus-within:ring-indigo-500/20 transition-all">
-                  <button type="button" className="text-zinc-500 hover:text-zinc-400 transition-colors">
+                  <button
+                    type="button"
+                    className="text-zinc-500 hover:text-zinc-400 transition-colors"
+                  >
                     <Paperclip size={16} />
                   </button>
-                  
+
                   <input
                     type="text"
                     value={inputText}
@@ -279,8 +299,11 @@ export default function CompleteChatAppPage() {
                     placeholder={`Type a message for ${activeUser.name}...`}
                     className="flex-1 bg-transparent border-none outline-none text-xs text-zinc-200 placeholder:text-zinc-600"
                   />
-                  
-                  <button type="button" className="text-zinc-500 hover:text-zinc-400 transition-colors hidden sm:block">
+
+                  <button
+                    type="button"
+                    className="text-zinc-500 hover:text-zinc-400 transition-colors hidden sm:block"
+                  >
                     <Smile size={16} />
                   </button>
                 </div>
@@ -296,7 +319,10 @@ export default function CompleteChatAppPage() {
             </>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-zinc-600 gap-2">
-              <MessageSquare size={32} className="text-zinc-700 animate-pulse" />
+              <MessageSquare
+                size={32}
+                className="text-zinc-700 animate-pulse"
+              />
               <span className="text-xs font-medium text-zinc-500">
                 Select a contact from the list to view chat
               </span>

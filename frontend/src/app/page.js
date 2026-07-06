@@ -15,7 +15,6 @@ import { motion } from "framer-motion";
 import { useCurrentUser } from "./context/CurrentUserContext";
 const LandingPage = () => {
   const { currentUser: user } = useCurrentUser();
-
   return (
     <div className="min-h-screen bg-[#fafafa] text-slate-900 selection:bg-indigo-100">
       {/* --- Navbar --- */}

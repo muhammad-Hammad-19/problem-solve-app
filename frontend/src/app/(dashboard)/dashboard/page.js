@@ -14,10 +14,12 @@ import { useUsersFeeds } from "@/app/context/UserFeedContext";
 import { useCurrentUser } from "@/app/context/CurrentUserContext";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { useEffect } from "react";
+import Link from "next/link";
 
 const HelplyticsDashboard = () => {
-  const { feeds } = useUsersFeeds();
-  const { currentUser } = useCurrentUser();
+  const { feeds, fetchUserFeeds } = useUsersFeeds();
+  const { currentUser, setCurrentUser, fetchCurrentUser } = useCurrentUser();
   const router = useRouter();
 
   const recentRequests = feeds?.slice(-3) || [];
@@ -28,6 +30,13 @@ const HelplyticsDashboard = () => {
     : currentUser?.username
       ? currentUser.username.charAt(0).toUpperCase()
       : "D";
+
+  useEffect(() => {
+    if (fetchUserFeeds && fetchCurrentUser) {
+      fetchUserFeeds();
+      fetchCurrentUser();
+    }
+  }, []);
 
   const stats = [
     {
@@ -70,11 +79,12 @@ const HelplyticsDashboard = () => {
           },
         },
       );
-      
+
       // Agar response successfully aa jata hai
 
       if (res.data.success) {
         console.log("Logged out successfully");
+        setCurrentUser(null);
         router.push("/"); // '/' ke page pe redirect kiya
       }
     } catch (error) {
@@ -105,10 +115,22 @@ const HelplyticsDashboard = () => {
               label="Dashboard"
               active
             />
-            <NavItem icon={<Search size={18} />} label="Explore" />
-            <NavItem icon={<MessageSquare size={18} />} label="Interactions" />
-            <NavItem icon={<Trophy size={18} />} label="Leaderboard" />
-            <NavItem icon={<Bell size={18} />} label="Notifications" />
+            <NavItem
+              icon={<Search size={18} />}
+              label="Explore"
+              href="/exploreFeed"
+            />
+            <NavItem
+              icon={<MessageSquare size={18} />}
+              label="Interactions"
+              href="/interactions"
+            />
+            <NavItem
+              icon={<Trophy size={18} />}
+              label="Leaderboard"
+              href="/leaderboard"
+            />
+            <NavItem icon={<Bell size={18} />} label="Notifications" href="#" />
           </nav>
         </div>
 
@@ -217,7 +239,10 @@ const HelplyticsDashboard = () => {
               <h3 className="font-semibold text-zinc-200 text-sm tracking-wide">
                 Recent Help Requests
               </h3>
-              <button className="text-xs font-medium text-indigo-400 hover:text-indigo-300 transition-colors bg-indigo-500/5 hover:bg-indigo-500/10 px-3 py-1.5 rounded-lg border border-indigo-500/10">
+              <button
+                onClick={() => router.push("/exploreFeed")}
+                className="text-xs font-medium text-indigo-400 hover:text-indigo-300 transition-colors bg-indigo-500/5 hover:bg-indigo-500/10 px-3 py-1.5 rounded-lg border border-indigo-500/10"
+              >
                 View Feed
               </button>
             </div>
@@ -280,17 +305,19 @@ const HelplyticsDashboard = () => {
   );
 };
 
-const NavItem = ({ icon, label, active = false }) => (
-  <div
-    className={`flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-all duration-200 text-sm font-medium ${
-      active
-        ? "bg-zinc-800/80 text-white font-semibold border border-zinc-700/50 shadow-inner"
-        : "text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900/40"
-    }`}
-  >
-    {icon}
-    <span>{label}</span>
-  </div>
+const NavItem = ({ icon, label, href = "#", active = false }) => (
+  <Link className="block" href={href}>
+    <div
+      className={`flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-all duration-200 text-sm font-medium ${
+        active
+          ? "bg-zinc-800/80 text-white font-semibold border border-zinc-700/50 shadow-inner"
+          : "text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900/40"
+      }`}
+    >
+      {icon}
+      <span>{label}</span>
+    </div>
+  </Link>
 );
 
 export default HelplyticsDashboard;

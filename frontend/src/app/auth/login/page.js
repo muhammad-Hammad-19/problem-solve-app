@@ -39,6 +39,7 @@ const Login = () => {
 
       setTimeout(() => {
         router.push("/dashboard");
+        router.refresh();
       }, 2500);
 
       reset();

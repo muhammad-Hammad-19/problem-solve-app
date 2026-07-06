@@ -9,28 +9,27 @@ export const UsersFetchProvider = ({ children }) => {
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        setIsLoading(true);
-        const response = await axios.get("http://localhost:5000/user", {
-          withCredentials: true,
-        });
+  const fetchUsers = async () => {
+    try {
+      setIsLoading(true);
+      const response = await axios.get("http://localhost:5000/user", {
+        withCredentials: true,
+      });
 
-        const resData = response.data;
-        if (resData && resData.data) {
-          setUsers(resData.data);
-        } else {
-          setUsers([]); // Handled direct array
-        }
-      } catch (error) {
-        setUsers([]);
-        console.error("Error fetching users:", error.message);
-      } finally {
-        setIsLoading(false);
+      const resData = response.data;
+      if (resData && resData.data) {
+        setUsers(resData.data);
+      } else {
+        setUsers([]); // Handled direct array
       }
-    };
-
+    } catch (error) {
+      setUsers([]);
+      console.error("Error fetching users:", error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  useEffect(() => {
     fetchUsers();
   }, []);
 
