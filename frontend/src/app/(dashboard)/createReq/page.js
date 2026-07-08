@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { set, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import {
   Send,
   Tag,
@@ -17,17 +17,19 @@ import {
 import axios from "axios";
 
 const CreateRequest = () => {
-const [urgency, setUrgency] = useState("Medium");
-
-  const { register, handleSubmit, watch, getValues, setValue, reset } = useForm({
-    defaultValues: {
-      title: "",
-      description: "",
-      tags: "Development", // Default enum value
-      skills: "",          // NAYA: Skills add kiya
+  const [urgency, setUrgency] = useState("Medium");
+  const [clickAi, setClickAi] = useState(false);
+  const { register, handleSubmit, watch, getValues, setValue, reset } = useForm(
+    {
+      defaultValues: {
+        title: "",
+        description: "",
+        tags: "Development", // Default enum value
+        skills: "", // NAYA: Skills add kiya
+      },
     },
-  });
-  
+  );
+
   const formValues = watch();
 
   const onSubmit = async (data) => {
@@ -55,7 +57,7 @@ const [urgency, setUrgency] = useState("Medium");
 
   const handleAiRes = async () => {
     const { title, description, tags } = getValues();
-
+    setClickAi(true);
     try {
       const res = await axios.post(
         "http://localhost:5000/feed/ai",
@@ -68,10 +70,11 @@ const [urgency, setUrgency] = useState("Medium");
           withCredentials: true,
         },
       );
-
       const data = res.data;
-
       const { improvedTitle, tags: aiTags, descriptionSuggestion } = data;
+      if (improvedTitle || tags || description || data) {
+        setClickAi(false);
+      }
       setValue("description", descriptionSuggestion);
       setValue("title", improvedTitle);
       setValue("tags", aiTags);
@@ -313,11 +316,19 @@ const [urgency, setUrgency] = useState("Medium");
                   </p>
                   <div className="flex flex-wrap gap-2 pt-1">
                     <button
-                      onClick={() => handleAiRes()}
+                      onClick={handleAiRes}
                       type="button"
-                      className="text-[10px] font-medium bg-zinc-900 hover:bg-blue-800/80 text-zinc-400 hover:text-zinc-200 py-1 px-2.5 rounded-md border border-zinc-800 transition-colors flex items-center gap-1.5"
+                      disabled={clickAi}
+                      className="text-[10px] font-medium bg-zinc-900 hover:bg-blue-800/80 disabled:opacity-60 disabled:cursor-not-allowed text-zinc-400 hover:text-zinc-200 py-1 px-2.5 rounded-md border border-zinc-800 transition-colors flex items-center gap-1.5"
                     >
-                      Ai Suggestions
+                      {clickAi ? (
+                        <>
+                          <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-zinc-500 border-t-blue-500"></div>
+                          <span>Loading...</span>
+                        </>
+                      ) : (
+                        "Ai Suggestions"
+                      )}
                     </button>
                   </div>
                 </div>

@@ -165,18 +165,21 @@ const HelplyticsDashboard = () => {
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col overflow-hidden bg-gradient-to-b from-[#070709] to-[#020203]">
         {/* Header */}
-        <header className="h-16 border-b border-zinc-800/60 flex items-center justify-between px-8 bg-[#020203]/40 backdrop-blur-xl z-10">
+        <header className="h-16 border-b border-zinc-800/60 flex items-center justify-between py-5 px-8 bg-[#020203]/40 backdrop-blur-xl z-10">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-zinc-500">
             Overview Dashboard
           </h2>
           <div className="flex items-center gap-4">
             {/* New Request Button (Sirf Button Bacha Hai, Modal Ka Kam Khatam) */}
-            <button className="bg-zinc-100 hover:bg-white text-zinc-900 px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-zinc-100/10 transition-all duration-200 flex items-center gap-2 group">
+            <button
+              onClick={() => router.push("/createReq")}
+              className="bg-zinc-100 hover:bg-white text-zinc-900 px-4 py-2 rounded-xl text-sm font-semibold shadow-md hover:shadow-zinc-100/10 transition-all duration-200 flex items-center gap-2 group"
+            >
               <PlusCircle
                 size={16}
                 className="text-zinc-900 transition-transform group-hover:scale-110"
               />
-              New Request
+              Create Request
             </button>
           </div>
         </header>
