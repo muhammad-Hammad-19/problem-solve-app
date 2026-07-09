@@ -9,6 +9,7 @@ import userRouter from "./routes/userRoutes.js";
 import { createServer } from "node:http";
 import { Server } from "socket.io";
 import requestRouter from "./routes/requestRoutes.js";
+import helperRouter from "./routes/helperRoutes.js";
 
 dotenv.config();
 
@@ -43,6 +44,8 @@ app.use("/feed", feedRouter);
 app.use("/user", userRouter);
 
 app.use("/request", requestRouter);
+
+app.use("/helper", helperRouter);
 
 connectDB();
 

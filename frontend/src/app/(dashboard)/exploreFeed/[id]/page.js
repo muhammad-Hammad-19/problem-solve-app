@@ -1,6 +1,7 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+
 import {
   MapPin,
   Code2,
@@ -13,7 +14,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; // Essential styles for toastify
+import "react-toastify/dist/ReactToastify.css"; 
 import { useUsersFeeds } from "@/app/context/UserFeedContext";
 
 const RequestDetailPage = () => {
@@ -21,25 +22,38 @@ const RequestDetailPage = () => {
   const router = useRouter();
   const { feeds } = useUsersFeeds();
 
+  // 1. Helpers save karne ke liye state banayi
+  const [helpers, setHelpers] = useState([]);
+
   const item = feeds?.find((f) => f?._id.toString() === params?.id);
 
-  // Dummy Helpers Array
-  const dummyHelpers = [
-    {
-      id: "1",
-      name: "Alex Rivera",
-      avatar: "AR",
-      role: "Full Stack Engineer",
-      joinedAt: "10m ago",
-    },
-    {
-      id: "2",
-      name: "Sarah Chen",
-      avatar: "SC",
-      role: "UI/UX Designer",
-      joinedAt: "2h ago",
-    },
-  ];
+  const handleFetchHepler = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:5000/helper/allHelperFetch/`,
+        {
+          withCredentials: true,
+        }
+      );
+      const data = response.data.data;
+      
+      // Post ID match karke filter kiya
+      const filteredHelpers = data.filter((item) => item.postId === params?.id);
+      
+      // State mein save karwaya
+      setHelpers(filteredHelpers);
+
+    } catch (error) {
+      console.error(error.response?.data || error.message);
+    }
+  };
+
+  // 2. Dependency array [params?.id] add ki taake infinite loops na hon
+  useEffect(() => {
+    if (params?.id) {
+      handleFetchHepler();
+    }
+  }, [params?.id]);
 
   const handleHelperReq = async (postId) => {
     try {
@@ -48,20 +62,19 @@ const RequestDetailPage = () => {
         {},
         {
           withCredentials: true,
-        },
+        }
       );
 
       console.log(response.data);
 
       if (response.data.successful) {
         toast.success(response.data.message || "Request sent successfully!");
+        handleFetchHepler(); // Data refresh karne ke liye dobara call kiya
       } else {
         toast.warning(response.data.message || "Something went wrong.");
       }
     } catch (error) {
       console.error(error.response?.data || error.message);
-
-      // Backend error message extract kar ke toast.error me dikhana
       const errMsg = error.response?.data?.message || "Internal Server Error";
       toast.error(errMsg);
     }
@@ -80,24 +93,16 @@ const RequestDetailPage = () => {
 
   return (
     <div className="min-h-screen bg-[#09090b] text-zinc-100 p-4 md:p-12">
-      {/* ToastContainer configuration for Dark UI */}
       <ToastContainer
         position="top-right"
         autoClose={4000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
         theme="dark"
       />
 
       <div className="max-w-5xl mx-auto">
         {/* Top Navigation */}
         <button
-          onClick={() => router.back("/exploreFeed")}
+          onClick={() => router.push("/exploreFeed")}
           className="flex items-center gap-2 text-zinc-500 hover:text-indigo-400 mb-10 transition-all group"
         >
           <ArrowLeft
@@ -208,37 +213,49 @@ const RequestDetailPage = () => {
               </button>
             </div>
 
-            {/* HELPERS CARD (UI LOOP ONLY) */}
+            {/* DYNAMIC HELPERS CARD */}
             <div className="bg-zinc-900/40 border border-zinc-800 p-6 rounded-[2.5rem] space-y-4">
               <div className="flex items-center gap-2 text-zinc-400 border-b border-zinc-800 pb-3">
                 <Users size={18} className="text-indigo-400" />
                 <h5 className="font-bold text-sm uppercase tracking-wider">
-                  Helpers Active ({dummyHelpers.length})
+                  Helpers Active ({helpers.length})
                 </h5>
               </div>
 
               <div className="space-y-3">
-                {dummyHelpers.map((helper) => (
-                  <div
-                    key={helper.id}
-                    className="flex items-center justify-between p-3 bg-zinc-800/30 rounded-2xl border border-zinc-800/50 hover:border-zinc-700 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-sm">
-                        {helper.avatar}
-                      </div>
-                      <div>
-                        <h6 className="text-sm font-semibold text-zinc-200">
-                          {helper.name}
-                        </h6>
-                        <p className="text-xs text-zinc-500">{helper.role}</p>
-                      </div>
-                    </div>
-                    <span className="text-[10px] text-zinc-600 font-medium">
-                      {helper.joinedAt}
-                    </span>
+                {helpers.length === 0 ? (
+                  // 3. Agar koi helper nahi mila toh yeh render hoga (In English)
+                  <div className="text-center py-6">
+                    <p className="text-sm text-zinc-500 italic">
+                      No helper found for this post yet.
+                    </p>
                   </div>
-                ))}
+                ) : (
+                  // 4. Agar helpers milgaye toh loop chalega aapke data keys ke mutabiq
+                  helpers.map((helper) => (
+                    <div
+                      key={helper.helperId}
+                      className="flex items-center justify-between p-3 bg-zinc-800/30 rounded-2xl border border-zinc-800/50 hover:border-zinc-700 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-sm">
+                          {helper.helperName?.charAt(0)?.toUpperCase() || "H"}
+                        </div>
+                        <div>
+                          <h6 className="text-sm font-semibold text-zinc-200">
+                            {helper.helperName}
+                          </h6>
+                          <p className={`text-[11px] font-medium ${helper.isAccepted ? "text-emerald-500" : "text-amber-500"}`}>
+                            {helper.isAccepted ? "Request Accepted" : "Pending Approval"}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-[10px] text-zinc-600 font-medium">
+                        {new Date(helper.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>

@@ -15,8 +15,12 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import axios from "axios";
+import { useRouter } from "next/navigation";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const CreateRequest = () => {
+  const router = useRouter();
   const [urgency, setUrgency] = useState("Medium");
   const [clickAi, setClickAi] = useState(false);
   const { register, handleSubmit, watch, getValues, setValue, reset } = useForm(
@@ -27,31 +31,45 @@ const CreateRequest = () => {
         tags: "Development", // Default enum value
         skills: "", // NAYA: Skills add kiya
       },
-    },
+    }
   );
 
   const formValues = watch();
 
   const onSubmit = async (data) => {
-    console.log({ ...data, urgency });
     try {
       const res = await axios.post(
         "http://localhost:5000/feed/create",
         {
           ...data,
+          urgency,
         },
         {
           withCredentials: true,
-        },
+        }
       );
       const dataSucess = res.data.success;
 
       if (dataSucess === true) {
-        console.log(data.message);
+        // Success Toast trigger karna
+        toast.success("Post created successfully! 🎉", {
+          theme: "dark", // Dark mode UI ke hisaab se
+          position: "bottom-right",
+        });
         reset();
+        
+        // Toast dikhane ke baad redirect karna
+        setTimeout(() => {
+          router.push("/exploreFeed");
+        }, 2000);
       }
     } catch (err) {
       console.log(err.message);
+      // Error Toast add karna
+      toast.error("Failed to create post. Please try again.", {
+        theme: "dark",
+        position: "bottom-right",
+      });
     }
   };
 
@@ -68,7 +86,7 @@ const CreateRequest = () => {
         },
         {
           withCredentials: true,
-        },
+        }
       );
       const data = res.data;
       const { improvedTitle, tags: aiTags, descriptionSuggestion } = data;
@@ -78,12 +96,19 @@ const CreateRequest = () => {
       setValue("description", descriptionSuggestion);
       setValue("title", improvedTitle);
       setValue("tags", aiTags);
+      toast.info("AI suggestions applied!", { theme: "dark", position: "bottom-right" });
     } catch (error) {
       console.error(error.message);
+      setClickAi(false);
+      toast.error("AI Assistant failed to respond.", { theme: "dark", position: "bottom-right" });
     }
   };
+
   return (
     <div className="min-h-screen bg-[#030303] bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(99,102,241,0.15),rgba(255,255,255,0))] text-zinc-100 p-4 md:p-12 font-sans antialiased">
+      {/* ToastContainer component zaroori hai alerts show karne ke liye */}
+      <ToastContainer />
+      
       <div className="max-w-6xl mx-auto">
         {/* Header Section */}
         <div className="mb-12 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-900 pb-8">
