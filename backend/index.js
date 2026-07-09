@@ -18,7 +18,7 @@ const server = createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: ["https://problem-solve-app.vercel.app", "http://localhost:3000"],
     credentials: true,
     methods: ["GET", "POST"],
   },
@@ -30,7 +30,7 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: ["https://problem-solve-app.vercel.app", "http://localhost:3000"],
     credentials: true,
   }),
 );
