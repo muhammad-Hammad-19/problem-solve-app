@@ -11,13 +11,12 @@ export const register = async (req, res) => {
     if (error) return res.status(400).json({ message: error.message });
 
     const result = await registerService(name, email, password, role);
-    
+
     return res.status(201).json({
       success: true,
       message: "User registered successfully",
       data: result,
     });
-    
   } catch (error) {
     return res.status(400).json({
       success: false,
@@ -36,10 +35,10 @@ export const login = async (req, res) => {
 
     if (result.message == "Login successfull") {
       res.cookie("token", result.token, {
-        httpOnly: true, // JS se access nahi hoga (secure)
-        secure: true, // https ke liye (production)
-        sameSite: "strict",
-        maxAge: 24 * 60 * 60 * 1000, // 1 day
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        maxAge: 24 * 60 * 60 * 1000,
       });
       return res.status(200).json({
         success: result.success,

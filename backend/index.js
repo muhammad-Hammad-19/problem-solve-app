@@ -16,17 +16,10 @@ dotenv.config();
 const app = express();
 const server = createServer(app);
 
-const io = new Server(server, {
-  cors: {
-    origin: ["https://problem-solve-app.vercel.app", "http://localhost:3000"],
-    credentials: true,
-    methods: ["GET", "POST"],
-  },
-});
-
 const PORT = process.env.PORT || 5000;
 
 app.use(cookieParser());
+
 app.use(
   cors({
     origin: ["https://problem-solve-app.vercel.app", "http://localhost:3000"],
@@ -37,32 +30,39 @@ app.use(
 app.use(express.json());
 
 app.use("/auth", authRouter);
-
 app.use("/feed", feedRouter);
-
 app.use("/user", userRouter);
-
 app.use("/request", requestRouter);
-
 app.use("/helper", helperRouter);
 
 connectDB();
 
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.send("Backend is running...");
+});
+
+const io = new Server(server, {
+  cors: {
+    origin: ["https://problem-solve-app.vercel.app", "http://localhost:3000"],
+    credentials: true,
+    methods: ["GET", "POST"],
+  },
 });
 
 const users = {};
 
 io.on("connection", (socket) => {
+  console.log("User Connected:", socket.id);
+
   socket.on("login-user", (userId) => {
     users[userId] = socket.id;
+    console.log("Logged In:", userId);
   });
 
   socket.on("chat-message", (msg) => {
     const { recevierId } = msg;
 
-    let receiverSocketId = users[recevierId];
+    const receiverSocketId = users[recevierId];
 
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("chat-message", msg);
@@ -70,20 +70,16 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    for (let userId in users) {
+    for (const userId in users) {
       if (users[userId] === socket.id) {
         delete users[userId];
-        console.log("User disconnected:", userId);
+        console.log("Disconnected:", userId);
         break;
       }
     }
   });
 });
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-});
-
-server.listen(8000, () => {
-  console.log(`Socket Server running on port 8000`);
 });
