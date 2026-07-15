@@ -26,13 +26,16 @@ const Login = () => {
     try {
       console.log(data);
 
-      const res = await axios.post("http://localhost:5000/auth/login", data, {
-        withCredentials: true,
-        headers: {
-          "Content-Type": "application/json",
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/auth/login`,
+        data,
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json",
+          },
         },
-      });
-
+      );
       toast.success(res.data.message);
 
       localStorage.setItem("user", JSON.stringify(res.data.data));

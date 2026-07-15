@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; 
+import "react-toastify/dist/ReactToastify.css";
 import { useUsersFeeds } from "@/app/context/UserFeedContext";
 
 const RequestDetailPage = () => {
@@ -30,19 +30,18 @@ const RequestDetailPage = () => {
   const handleFetchHepler = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:5000/helper/allHelperFetch/`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/helper/allHelperFetch`,
         {
           withCredentials: true,
-        }
+        },
       );
       const data = response.data.data;
-      
+
       // Post ID match karke filter kiya
       const filteredHelpers = data.filter((item) => item.postId === params?.id);
-      
+
       // State mein save karwaya
       setHelpers(filteredHelpers);
-
     } catch (error) {
       console.error(error.response?.data || error.message);
     }
@@ -58,11 +57,11 @@ const RequestDetailPage = () => {
   const handleHelperReq = async (postId) => {
     try {
       const response = await axios.post(
-        `http://localhost:5000/request/send/${postId}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/request/send/${postId}`,
         {},
         {
           withCredentials: true,
-        }
+        },
       );
 
       console.log(response.data);
@@ -93,11 +92,7 @@ const RequestDetailPage = () => {
 
   return (
     <div className="min-h-screen bg-[#09090b] text-zinc-100 p-4 md:p-12">
-      <ToastContainer
-        position="top-right"
-        autoClose={4000}
-        theme="dark"
-      />
+      <ToastContainer position="top-right" autoClose={4000} theme="dark" />
 
       <div className="max-w-5xl mx-auto">
         {/* Top Navigation */}
@@ -245,8 +240,12 @@ const RequestDetailPage = () => {
                           <h6 className="text-sm font-semibold text-zinc-200">
                             {helper.helperName}
                           </h6>
-                          <p className={`text-[11px] font-medium ${helper.isAccepted ? "text-emerald-500" : "text-amber-500"}`}>
-                            {helper.isAccepted ? "Request Accepted" : "Pending Approval"}
+                          <p
+                            className={`text-[11px] font-medium ${helper.isAccepted ? "text-emerald-500" : "text-amber-500"}`}
+                          >
+                            {helper.isAccepted
+                              ? "Request Accepted"
+                              : "Pending Approval"}
                           </p>
                         </div>
                       </div>

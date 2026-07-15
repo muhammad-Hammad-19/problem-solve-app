@@ -12,10 +12,12 @@ export const UsersFetchProvider = ({ children }) => {
   const fetchUsers = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get("http://localhost:5000/user", {
-        withCredentials: true,
-      });
-
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/user`,
+        {
+          withCredentials: true,
+        },
+      );
       const resData = response.data;
       if (resData && resData.data) {
         setUsers(resData.data);

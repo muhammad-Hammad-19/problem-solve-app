@@ -69,7 +69,7 @@ const HelplyticsDashboard = () => {
   const handleLogout = async () => {
     try {
       const res = await axios.post(
-        "http://localhost:5000/auth/logout",
+        `${process.env.NEXT_PUBLIC_BASE_URL}/auth/logout`,
         {},
         {
           withCredentials: true,
@@ -93,11 +93,9 @@ const HelplyticsDashboard = () => {
   return (
     // Changed: flex-col on mobile, md:flex-row on desktop
     <div className="flex flex-col md:flex-row h-screen bg-[#020203] text-zinc-100 font-sans antialiased selection:bg-indigo-500/30 overflow-hidden">
-      
       {/* Sidebar - Made responsive for mobile top-nav style */}
       <aside className="w-full md:w-64 border-b md:border-b-0 md:border-r border-zinc-800/60 bg-[#070709] flex flex-col md:justify-between shrink-0 z-20">
         <div className="flex flex-col p-4 md:p-5 md:space-y-7 space-y-4">
-          
           {/* Top Row: Logo & Mobile Profile Actions */}
           <div className="flex items-center justify-between px-1 md:px-2">
             {/* Logo */}
@@ -126,10 +124,26 @@ const HelplyticsDashboard = () => {
 
           {/* Navigation Links - Horizontal scroll on mobile */}
           <nav className="flex flex-row md:flex-col gap-2 md:gap-0 space-y-0 md:space-y-1 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pb-1 md:pb-0 w-full">
-            <NavItem icon={<LayoutDashboard size={18} />} label="Dashboard" active />
-            <NavItem icon={<Search size={18} />} label="Explore" href="/exploreFeed" />
-            <NavItem icon={<MessageSquare size={18} />} label="Interactions" href="/interactions" />
-            <NavItem icon={<Trophy size={18} />} label="Leaderboard" href="/leaderboard" />
+            <NavItem
+              icon={<LayoutDashboard size={18} />}
+              label="Dashboard"
+              active
+            />
+            <NavItem
+              icon={<Search size={18} />}
+              label="Explore"
+              href="/exploreFeed"
+            />
+            <NavItem
+              icon={<MessageSquare size={18} />}
+              label="Interactions"
+              href="/interactions"
+            />
+            <NavItem
+              icon={<Trophy size={18} />}
+              label="Leaderboard"
+              href="/leaderboard"
+            />
           </nav>
         </div>
 
@@ -150,14 +164,16 @@ const HelplyticsDashboard = () => {
             className="p-2 rounded-xl text-rose-400/80 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all duration-200 group shrink-0"
             title="Logout"
           >
-            <LogOut size={18} className="transition-transform group-hover:translate-x-0.5" />
+            <LogOut
+              size={18}
+              className="transition-transform group-hover:translate-x-0.5"
+            />
           </button>
         </div>
       </aside>
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col overflow-hidden bg-gradient-to-b from-[#070709] to-[#020203]">
-        
         {/* Responsive Header */}
         <header className="h-auto md:h-16 border-b border-zinc-800/60 flex items-center justify-between py-4 px-5 md:py-5 md:px-8 bg-[#020203]/40 backdrop-blur-xl z-10 shrink-0">
           <h2 className="text-[10px] md:text-xs font-semibold uppercase tracking-widest text-zinc-500 truncate max-w-[150px] md:max-w-full">
@@ -168,7 +184,10 @@ const HelplyticsDashboard = () => {
               onClick={() => router.push("/createReq")}
               className="bg-zinc-100 hover:bg-white text-zinc-900 px-3 py-1.5 md:px-4 md:py-2 rounded-xl text-xs md:text-sm font-semibold shadow-md hover:shadow-zinc-100/10 transition-all duration-200 flex items-center gap-1.5 md:gap-2 group"
             >
-              <PlusCircle size={16} className="text-zinc-900 transition-transform group-hover:scale-110" />
+              <PlusCircle
+                size={16}
+                className="text-zinc-900 transition-transform group-hover:scale-110"
+              />
               <span className="hidden sm:inline">Create Request</span>
               <span className="inline sm:hidden">Create</span>
             </button>
@@ -177,7 +196,6 @@ const HelplyticsDashboard = () => {
 
         {/* Dashboard Body */}
         <div className="p-4 md:p-8 overflow-y-auto space-y-6 md:space-y-8 pb-20 md:pb-8">
-          
           {/* Welcome Text */}
           <div>
             <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white via-zinc-200 to-zinc-500 bg-clip-text text-transparent">
@@ -199,7 +217,9 @@ const HelplyticsDashboard = () => {
                   <p className="text-[10px] md:text-xs text-zinc-400 font-medium tracking-wide uppercase pr-2">
                     {stat.label}
                   </p>
-                  <div className={`p-1.5 md:p-2 rounded-xl shrink-0 ${stat.color}`}>
+                  <div
+                    className={`p-1.5 md:p-2 rounded-xl shrink-0 ${stat.color}`}
+                  >
                     <stat.icon size={16} className="md:w-[18px] md:h-[18px]" />
                   </div>
                 </div>
@@ -214,7 +234,10 @@ const HelplyticsDashboard = () => {
           <div className="relative overflow-hidden bg-gradient-to-r from-indigo-950/30 via-purple-950/20 to-transparent border border-indigo-500/20 p-4 md:p-5 rounded-2xl shadow-xl shadow-indigo-500/[0.02]">
             <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
             <div className="flex items-center gap-2 mb-2">
-              <Zap size={14} className="text-indigo-400 fill-indigo-400/20 md:w-[15px] md:h-[15px]" />
+              <Zap
+                size={14}
+                className="text-indigo-400 fill-indigo-400/20 md:w-[15px] md:h-[15px]"
+              />
               <span className="text-[10px] md:text-xs font-bold text-indigo-400 uppercase tracking-wider">
                 AI Smart Recommendation
               </span>
@@ -254,7 +277,10 @@ const HelplyticsDashboard = () => {
                       </h4>
                       <div className="flex flex-wrap items-center gap-2 md:gap-3">
                         <span className="text-[10px] md:text-xs text-zinc-500">
-                          by <span className="text-zinc-400">{req.user || "Anonymous"}</span>
+                          by{" "}
+                          <span className="text-zinc-400">
+                            {req.user || "Anonymous"}
+                          </span>
                         </span>
                         <div className="flex flex-wrap gap-1.5">
                           {req?.tags?.map((tag) => (

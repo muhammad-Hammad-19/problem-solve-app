@@ -12,9 +12,12 @@ export const UserFeedProvider = ({ children }) => {
   const fetchUserFeeds = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("http://localhost:5000/feed/fetch", {
-        withCredentials: true,
-      });
+      const res = await axios.get(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/feed/fetch`,
+        {
+          withCredentials: true,
+        },
+      );
       setFeeds(res?.data?.data || []);
     } catch (error) {
       console.error("Feed error:", error.message);

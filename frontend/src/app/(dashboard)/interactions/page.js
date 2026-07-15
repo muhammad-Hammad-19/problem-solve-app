@@ -28,14 +28,17 @@ export default function CompleteChatAppPage() {
   // Current user fetch
   useEffect(() => {
     const getUser = async () => {
-      const res = await axios.get("http://localhost:5000/user/getUser", {
-        withCredentials: true,
-      });
+      const res = await axios.get(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/user/getUser`,
+        {
+          withCredentials: true,
+        },
+      );
       setCurrentUserId(res.data.user._id);
     };
     getUser();
   }, []);
-  
+
   // Socket login
   useEffect(() => {
     if (!currentUserId) return;

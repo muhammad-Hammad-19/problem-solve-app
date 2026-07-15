@@ -38,16 +38,16 @@ const CreateRequest = () => {
 
   const onSubmit = async (data) => {
     try {
-      const res = await axios.post(
-        "http://localhost:5000/feed/create",
-        {
-          ...data,
-          urgency,
-        },
-        {
-          withCredentials: true,
-        }
-      );
+    const res = await axios.post(
+  `${process.env.NEXT_PUBLIC_BASE_URL}/feed/create`,
+  {
+    ...data,
+    urgency,
+  },
+  {
+    withCredentials: true,
+  }
+);
       const dataSucess = res.data.success;
 
       if (dataSucess === true) {
@@ -77,17 +77,17 @@ const CreateRequest = () => {
     const { title, description, tags } = getValues();
     setClickAi(true);
     try {
-      const res = await axios.post(
-        "http://localhost:5000/feed/ai",
-        {
-          title,
-          description,
-          tags,
-        },
-        {
-          withCredentials: true,
-        }
-      );
+     const res = await axios.post(
+  `${process.env.NEXT_PUBLIC_BASE_URL}/feed/ai`,
+  {
+    title,
+    description,
+    tags,
+  },
+  {
+    withCredentials: true,
+  }
+);
       const data = res.data;
       const { improvedTitle, tags: aiTags, descriptionSuggestion } = data;
       if (improvedTitle || tags || description || data) {

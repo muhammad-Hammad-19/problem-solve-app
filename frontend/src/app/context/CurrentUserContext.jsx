@@ -12,10 +12,12 @@ export const CurrentUserProvider = ({ children }) => {
   const fetchCurrentUser = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get("http://localhost:5000/user/getUser", {
-        // Adjusted URL wrapper if needed
-        withCredentials: true,
-      });
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/user/getUser`,
+        {
+          withCredentials: true,
+        },
+      );
       const resData = response.data.user;
 
       if (resData) {

@@ -26,9 +26,8 @@ const Signup = () => {
 
   const onSubmit = async (data) => {
     try {
-
       const res = await axios.post(
-        "http://localhost:5000/auth/register",
+        `${process.env.NEXT_PUBLIC_BASE_URL}/auth/register`,
         data,
         {
           withCredentials: true,
@@ -37,13 +36,11 @@ const Signup = () => {
           },
         },
       );
-
       toast.success(res.data.message || "Account created successfully!");
 
       setTimeout(() => {
         router.push("/auth/login");
       }, 2500);
-      
     } catch (error) {
       console.log(error.response?.data || error.message);
       toast.error(error.response?.data?.message || "Something went wrong");
