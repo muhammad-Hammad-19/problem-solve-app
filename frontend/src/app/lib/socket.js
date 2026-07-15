@@ -1,5 +1,10 @@
+"use client";
+
 import { io } from "socket.io-client";
 
-const SOCKET_URL = `http://localhost:8000`;
+const SOCKET_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
-export const socket = io(SOCKET_URL);
+export const socket = io(SOCKET_URL, {
+  withCredentials: true,
+  transports: ["websocket", "polling"],
+});
