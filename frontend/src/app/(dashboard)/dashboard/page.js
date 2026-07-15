@@ -130,7 +130,6 @@ const HelplyticsDashboard = () => {
             <NavItem icon={<Search size={18} />} label="Explore" href="/exploreFeed" />
             <NavItem icon={<MessageSquare size={18} />} label="Interactions" href="/interactions" />
             <NavItem icon={<Trophy size={18} />} label="Leaderboard" href="/leaderboard" />
-            <NavItem icon={<Bell size={18} />} label="Notifications" href="#" />
           </nav>
         </div>
 
