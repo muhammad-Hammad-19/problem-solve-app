@@ -10,6 +10,8 @@ import { createServer } from "node:http";
 import { Server } from "socket.io";
 import requestRouter from "./routes/requestRoutes.js";
 import helperRouter from "./routes/helperRoutes.js";
+import messageRouter from "./routes/messageRoutes.js";
+import Message from "./models/message.model.js";
 
 dotenv.config();
 
@@ -34,6 +36,7 @@ app.use("/feed", feedRouter);
 app.use("/user", userRouter);
 app.use("/request", requestRouter);
 app.use("/helper", helperRouter);
+app.use("/message", messageRouter);
 
 connectDB();
 
@@ -59,14 +62,30 @@ io.on("connection", (socket) => {
     console.log("Logged In:", userId);
   });
 
-  socket.on("chat-message", (msg) => {
-    const { recevierId } = msg;
+  socket.on("chat-message", async (msg) => {
+    const { senderId, receiverId, content } = msg;
 
-    const receiverSocketId = users[recevierId];
+    // 1. Pehle validate karo
+    if (!senderId || !receiverId || !content) {
+      socket.emit("chat-message-error", { error: "Missing fields" });
+      return;
+    }
+    // 2. DB mein save karo
+    const savedMessage = await Message.create({
+      senderId,
+      receiverId,
+      content,
+    });
+
+    // 3. Receiver online hai to usay bhejo
+    const receiverSocketId = users[receiverId];
 
     if (receiverSocketId) {
-      io.to(receiverSocketId).emit("chat-message", msg);
+      io.to(receiverSocketId).emit("chat-message", savedMessage);
     }
+
+    // 4. Sender ko confirmation bhejo (saved message with _id, createdAt waghera)
+    socket.emit("chat-message-sent", savedMessage);
   });
 
   socket.on("disconnect", () => {

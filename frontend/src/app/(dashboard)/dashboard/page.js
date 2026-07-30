@@ -110,9 +110,13 @@ const HelplyticsDashboard = () => {
 
             {/* Mobile Profile & Logout (Hidden on Desktop) */}
             <div className="flex md:hidden items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-xs text-white shadow-inner uppercase">
+              <Link
+                href="/profile"
+                aria-label="Open profile"
+                className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-xs text-white shadow-inner uppercase"
+              >
                 {userFirstLetter}
-              </div>
+              </Link>
               <button
                 onClick={handleLogout}
                 className="p-2 rounded-xl text-rose-400/80 hover:text-rose-400 bg-rose-500/10 transition-all"
@@ -150,14 +154,20 @@ const HelplyticsDashboard = () => {
         {/* Desktop Sidebar Bottom (Profile & Logout) - Hidden on Mobile */}
         <div className="hidden md:flex p-5 pt-4 border-t border-zinc-800/60 items-center justify-between gap-2 bg-[#070709]">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-sm text-white shadow-inner border border-indigo-400/20 uppercase shrink-0">
-              {userFirstLetter}
-            </div>
-            <div className="text-left truncate">
-              <p className="text-sm font-semibold text-zinc-200 truncate max-w-[120px]">
-                {currentUser?.name || "Developer"}
-              </p>
-            </div>
+            <Link
+              href="/profile"
+              className="flex items-center gap-3 min-w-0"
+              aria-label="Open profile"
+            >
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-sm text-white shadow-inner border border-indigo-400/20 uppercase shrink-0">
+                {userFirstLetter}
+              </div>
+              <div className="text-left truncate">
+                <p className="text-sm font-semibold text-zinc-200 truncate max-w-[120px]">
+                  {currentUser?.name || "Developer"}
+                </p>
+              </div>
+            </Link>
           </div>
           <button
             onClick={handleLogout}

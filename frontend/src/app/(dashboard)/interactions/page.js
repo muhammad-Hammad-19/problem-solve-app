@@ -1,338 +1,425 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
-  Loader2,
-  Send,
-  Search,
-  Phone,
-  Video,
+  CheckCheck,
   Info,
-  Paperclip,
-  Smile,
+  Loader2,
   MessageSquare,
+  MoreHorizontal,
+  Paperclip,
+  Phone,
+  Search,
+  Send,
+  Smile,
+  Video,
 } from "lucide-react";
-import { socket } from "@/app/lib/socket.js";
 import axios from "axios";
+import { socket } from "@/app/lib/socket.js";
 import { useUsersFetch } from "@/app/context/UsersContext";
 
+const API_URL = process.env.NEXT_PUBLIC_BASE_URL;
+
 export default function CompleteChatAppPage() {
-  const { users, loading: isLoading } = useUsersFetch();
+  const { users = [], isLoading: usersLoading } = useUsersFetch();
   const [activeChatId, setActiveChatId] = useState("");
   const [currentUserId, setCurrentUserId] = useState("");
   const [inputText, setInputText] = useState("");
   const [messages, setMessages] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
+  const [messagesLoading, setMessagesLoading] = useState(false);
   const bottomRef = useRef(null);
 
-  // Current user fetch
   useEffect(() => {
+    let isMounted = true;
+
     const getUser = async () => {
-      const res = await axios.get(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/user/getUser`,
-        {
+      try {
+        const response = await axios.get(`${API_URL}/user/getUser`, {
           withCredentials: true,
-        },
-      );
-      setCurrentUserId(res.data.user._id);
+        });
+
+        if (isMounted) {
+          setCurrentUserId(response.data.user._id);
+        }
+      } catch (error) {
+        console.error("Current user fetch failed:", error.message);
+      }
     };
+
     getUser();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  // Socket login
   useEffect(() => {
-    if (!currentUserId) return;
-    socket.emit("login-user", currentUserId);
+    if (currentUserId) {
+      socket.emit("login-user", currentUserId);
+    }
   }, [currentUserId]);
 
-  // Aane wala message state mein save karo
   useEffect(() => {
     const handleMessage = (data) => {
-      const { senderId, inputData } = data;
-      setMessages((prev) => {
-        const prevChat = prev[senderId] || [];
-        return {
-          ...prev,
-          [senderId]: [...prevChat, { text: inputData, type: "received" }],
-        };
-      });
+      if (!data?.senderId || !data?.content) return;
+
+      const incomingMessage = {
+        id: data._id || `${data.senderId}-${Date.now()}`,
+        text: data.content,
+        type: "received",
+        createdAt: data.createdAt || new Date().toISOString(),
+      };
+
+      setMessages((previous) => ({
+        ...previous,
+        [data.senderId]: [
+          ...(previous[data.senderId] || []),
+          incomingMessage,
+        ],
+      }));
     };
 
     socket.on("chat-message", handleMessage);
     return () => socket.off("chat-message", handleMessage);
   }, []);
 
-  // Default pehla user active karo
   useEffect(() => {
-    if (users && users.length > 0 && !activeChatId) {
+    if (users.length > 0 && !activeChatId) {
       setActiveChatId(users[0]._id);
     }
   }, [users, activeChatId]);
 
-  // Auto scroll
+  useEffect(() => {
+    if (!activeChatId || !currentUserId) return;
+
+    let isMounted = true;
+
+    const fetchMessages = async () => {
+      setMessagesLoading(true);
+
+      try {
+        const response = await axios.get(`${API_URL}/message/${activeChatId}`, {
+          withCredentials: true,
+        });
+
+        const fetchedMessages = (response.data.messages || []).map((message) => ({
+          id: message._id,
+          text: message.content,
+          type:
+            String(message.senderId) === String(currentUserId)
+              ? "sent"
+              : "received",
+          createdAt: message.createdAt,
+        }));
+
+        if (isMounted) {
+          setMessages((previous) => ({
+            ...previous,
+            [activeChatId]: fetchedMessages,
+          }));
+        }
+      } catch (error) {
+        console.error("Messages fetch failed:", error.message);
+      } finally {
+        if (isMounted) {
+          setMessagesLoading(false);
+        }
+      }
+    };
+
+    fetchMessages();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [activeChatId, currentUserId]);
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, activeChatId]);
 
-  const activeUser = users?.find((user) => user._id === activeChatId);
+  const activeUser = users.find((user) => user._id === activeChatId);
   const activeMessages = messages[activeChatId] || [];
-
-  // Filter users based on search
-  const filteredUsers = users?.filter((user) =>
+  const filteredUsers = users.filter((user) =>
     user.name?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  // Message send karo
-  const handleSendMessage = (e, id) => {
-    e.preventDefault();
-    if (!inputText.trim()) return;
+  const handleSendMessage = (event, receiverId) => {
+    event.preventDefault();
 
-    const data = {
+    const content = inputText.trim();
+    if (!content || !currentUserId) return;
+
+    socket.emit("chat-message", {
       senderId: currentUserId,
-      inputData: inputText,
-      recevierId: id,
-    };
-
-    socket.emit("chat-message", data);
-
-    // Sent message bhi state mein save karo
-    setMessages((prev) => {
-      const prevChat = prev[id] || [];
-      return {
-        ...prev,
-        [id]: [...prevChat, { text: inputText, type: "sent" }],
-      };
+      receiverId,
+      content,
     });
+
+    setMessages((previous) => ({
+      ...previous,
+      [receiverId]: [
+        ...(previous[receiverId] || []),
+        {
+          id: `local-${Date.now()}`,
+          text: content,
+          type: "sent",
+          createdAt: new Date().toISOString(),
+        },
+      ],
+    }));
 
     setInputText("");
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#09090b] flex flex-col items-center justify-center text-zinc-400">
-        <Loader2 className="animate-spin text-indigo-500 mb-3" size={32} />
-        <span className="text-xs font-bold uppercase tracking-widest text-zinc-500">
-          Syncing Messages...
-        </span>
-      </div>
-    );
+  if (usersLoading) {
+    return <PageLoader label="Loading conversations" />;
   }
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-zinc-100 p-2 sm:p-4 md:p-6 flex justify-center items-center font-sans selection:bg-indigo-500/30">
-      <div className="w-full max-w-6xl h-[85vh] grid grid-cols-1 md:grid-cols-3 bg-zinc-900/20 border border-zinc-800/80 rounded-[24px] overflow-hidden shadow-2xl backdrop-blur-xl">
-        {/* LEFT: USERS SIDEBAR */}
-        <div className="border-r border-zinc-800/60 bg-zinc-950/40 flex flex-col h-full">
-          {/* Sidebar Header */}
-          <div className="p-4 border-b border-zinc-800/60 space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold tracking-wide text-zinc-200">
-                Messages
-              </h3>
-              <span className="text-[11px] bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded-full font-medium">
-                {users?.length || 0} online
+    <main className="min-h-screen bg-[#050507] p-3 text-zinc-100 selection:bg-indigo-500/30 sm:p-6">
+      <div className="mx-auto grid min-h-[calc(100vh-3rem)] w-full max-w-7xl overflow-hidden rounded-[28px] border border-white/[0.08] bg-[#0a0a0e] shadow-2xl shadow-black/40 md:grid-cols-[320px_minmax(0,1fr)]">
+        <aside className="flex min-h-[300px] flex-col border-b border-white/[0.08] bg-[#0d0d12] md:min-h-0 md:border-b-0 md:border-r">
+          <div className="border-b border-white/[0.08] p-5">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className="mb-2 flex items-center gap-2">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 shadow-lg shadow-indigo-600/20">
+                    <MessageSquare size={17} />
+                  </div>
+                  <h1 className="text-lg font-bold tracking-tight">Messages</h1>
+                </div>
+                <p className="text-xs leading-5 text-zinc-500">
+                  Stay connected with your help community.
+                </p>
+              </div>
+              <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-semibold text-emerald-400">
+                {users.length} contacts
               </span>
             </div>
 
-            {/* Search Bar */}
-            <div className="relative">
+            <div className="relative mt-5">
               <Search
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500"
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500"
                 size={15}
               />
               <input
                 type="text"
-                placeholder="Search conversations..."
+                placeholder="Search people..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-zinc-900/60 border border-zinc-800/80 rounded-xl pl-9 pr-4 py-2 text-xs focus:outline-none focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/30 transition-all placeholder:text-zinc-600 text-zinc-200"
+                onChange={(event) => setSearchQuery(event.target.value)}
+                className="w-full rounded-xl border border-white/[0.08] bg-black/20 py-2.5 pl-10 pr-3 text-xs text-zinc-200 outline-none transition placeholder:text-zinc-600 focus:border-indigo-500/60 focus:ring-2 focus:ring-indigo-500/10"
               />
             </div>
           </div>
 
-          {/* Users Navigation List */}
-          <div className="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar">
-            {filteredUsers?.map((user) => {
+          <div className="custom-scrollbar flex-1 space-y-1 overflow-y-auto p-3">
+            {filteredUsers.map((user) => {
               const isSelected = activeChatId === user._id;
-              const userMessages = messages[user._id] || [];
-              const lastMsg = userMessages.at(-1);
+              const lastMessage = messages[user._id]?.at(-1);
 
               return (
-                <div
+                <button
                   key={user._id}
+                  type="button"
                   onClick={() => setActiveChatId(user._id)}
-                  className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all duration-200 ${
+                  className={`flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition-all ${
                     isSelected
-                      ? "bg-indigo-600/10 border border-indigo-500/30 text-zinc-100"
-                      : "bg-transparent border border-transparent hover:bg-zinc-900/40 text-zinc-400 hover:text-zinc-200"
+                      ? "border-indigo-500/30 bg-indigo-500/[0.12] shadow-lg shadow-indigo-950/20"
+                      : "border-transparent hover:border-white/[0.06] hover:bg-white/[0.035]"
                   }`}
                 >
-                  {/* User Initial Avatar */}
                   <div className="relative shrink-0">
-                    <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold border transition-colors ${
-                        isSelected
-                          ? "bg-indigo-600/20 border-indigo-500/40 text-indigo-400"
-                          : "bg-zinc-900 border-zinc-800 text-zinc-300"
-                      }`}
-                    >
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-zinc-700 to-zinc-900 text-sm font-bold text-zinc-200 ring-1 ring-white/10">
                       {user.name?.charAt(0).toUpperCase()}
                     </div>
-                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-[#09090b]" />
+                    <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-[#0d0d12] bg-emerald-400" />
                   </div>
 
-                  {/* Meta Details */}
-                  <div className="flex-1 min-w-0 flex flex-col gap-0.5">
-                    <div className="flex items-center justify-between">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-2">
                       <span
-                        className={`text-xs font-semibold truncate ${isSelected ? "text-indigo-400" : "text-zinc-200"}`}
+                        className={`truncate text-xs font-semibold ${
+                          isSelected ? "text-indigo-300" : "text-zinc-200"
+                        }`}
                       >
                         {user.name}
                       </span>
-                      {lastMsg && !isSelected && (
-                        <span className="w-2 h-2 rounded-full bg-indigo-500 shrink-0 animation-pulse" />
-                      )}
+                      {lastMessage && !isSelected ? (
+                        <span className="h-2 w-2 shrink-0 rounded-full bg-indigo-400" />
+                      ) : null}
                     </div>
-
-                    {/* Last message preview */}
-                    <p className="text-[11px] text-zinc-500 truncate font-medium">
-                      {lastMsg
-                        ? `${lastMsg.type === "sent" ? "You: " : ""}${lastMsg.text}`
+                    <p className="mt-1 truncate text-[11px] text-zinc-500">
+                      {lastMessage
+                        ? `${lastMessage.type === "sent" ? "You: " : ""}${lastMessage.text}`
                         : user.email}
                     </p>
                   </div>
-                </div>
+                </button>
               );
             })}
 
-            {filteredUsers?.length === 0 && (
-              <p className="text-center text-xs text-zinc-600 mt-4">
-                No users found
+            {filteredUsers.length === 0 ? (
+              <p className="px-3 py-8 text-center text-xs text-zinc-600">
+                No contacts found
               </p>
-            )}
+            ) : null}
           </div>
-        </div>
+        </aside>
 
-        {/* RIGHT: CHAT CONTROLLER */}
-        <div className="md:col-span-2 flex flex-col bg-zinc-950/10 h-full">
+        <section className="flex min-h-[620px] flex-col bg-[radial-gradient(circle_at_top_right,_rgba(79,70,229,0.12),_transparent_35%),#08080b]">
           {activeUser ? (
             <>
-              {/* Active Chat Header */}
-              <div className="p-4 bg-zinc-950/40 border-b border-zinc-800/60 flex items-center justify-between backdrop-blur-md">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center text-white font-bold text-xs shadow-lg shadow-indigo-500/10 shrink-0">
+              <header className="flex items-center justify-between border-b border-white/[0.08] bg-black/10 px-5 py-4 backdrop-blur-xl sm:px-7">
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 text-sm font-bold shadow-lg shadow-indigo-900/30">
                     {activeUser.name?.charAt(0).toUpperCase()}
                   </div>
-                  <div className="flex flex-col">
-                    <h4 className="font-bold text-xs text-zinc-200 tracking-wide">
+                  <div className="min-w-0">
+                    <h2 className="truncate text-sm font-bold text-zinc-100">
                       {activeUser.name}
-                    </h4>
-                    <span className="text-[10px] text-zinc-500 font-medium truncate max-w-[180px] sm:max-w-none">
-                      {activeUser.email}
-                    </span>
+                    </h2>
+                    <p className="mt-1 truncate text-[11px] text-emerald-400">
+                      Active now
+                    </p>
                   </div>
                 </div>
 
-                {/* Header Mock Actions */}
-                <div className="flex items-center gap-1.5 text-zinc-400">
-                  <button className="p-2 hover:bg-zinc-900 rounded-lg hover:text-zinc-200 transition-colors">
+                <div className="flex items-center gap-1 text-zinc-500">
+                  <button type="button" className="chat-action-button" aria-label="Start call">
                     <Phone size={16} />
                   </button>
-                  <button className="p-2 hover:bg-zinc-900 rounded-lg hover:text-zinc-200 transition-colors">
+                  <button type="button" className="chat-action-button" aria-label="Start video call">
                     <Video size={16} />
                   </button>
-                  <button className="p-2 hover:bg-zinc-900 rounded-lg hover:text-zinc-200 transition-colors">
-                    <Info size={16} />
+                  <button type="button" className="chat-action-button" aria-label="More options">
+                    <MoreHorizontal size={18} />
                   </button>
                 </div>
-              </div>
+              </header>
 
-              {/* Dynamic Messages Box */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar bg-gradient-to-b from-transparent to-zinc-950/10">
-                {activeMessages.length === 0 ? (
-                  <div className="h-full flex flex-col items-center justify-center gap-2 text-zinc-600">
-                    <div className="w-12 h-12 rounded-2xl bg-zinc-900 flex items-center justify-center text-zinc-500 border border-zinc-800">
-                      <MessageSquare size={20} />
+              <div className="custom-scrollbar flex-1 overflow-y-auto px-4 py-6 sm:px-8">
+                {messagesLoading ? (
+                  <div className="flex h-full min-h-80 flex-col items-center justify-center gap-3 text-zinc-500">
+                    <Loader2 size={26} className="animate-spin text-indigo-400" />
+                    <span className="text-xs font-medium">Fetching messages...</span>
+                  </div>
+                ) : activeMessages.length === 0 ? (
+                  <div className="flex h-full min-h-80 flex-col items-center justify-center text-center">
+                    <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-3xl border border-indigo-500/20 bg-indigo-500/10 text-indigo-300">
+                      <MessageSquare size={25} />
                     </div>
-                    <span className="text-[11px] font-medium text-zinc-500 mt-1">
-                      Say hi to begin your conversation!
-                    </span>
+                    <h3 className="text-sm font-semibold text-zinc-300">
+                      Start a new conversation
+                    </h3>
+                    <p className="mt-2 max-w-xs text-xs leading-5 text-zinc-600">
+                      Send a message to {activeUser.name} and start helping each other.
+                    </p>
                   </div>
                 ) : (
-                  activeMessages.map((msg, idx) => {
-                    const isSent = msg.type === "sent";
-                    return (
-                      <div
-                        key={idx}
-                        className={`flex ${isSent ? "justify-end" : "justify-start"}`}
-                      >
+                  <div className="mx-auto flex max-w-3xl flex-col gap-3">
+                    <p className="pb-3 text-center text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-600">
+                      Conversation
+                    </p>
+                    {activeMessages.map((message) => {
+                      const isSent = message.type === "sent";
+
+                      return (
                         <div
-                          className={`max-w-[75%] px-4 py-2.5 text-xs shadow-md font-medium leading-relaxed tracking-wide ${
-                            isSent
-                              ? "bg-indigo-600 text-white rounded-2xl rounded-tr-none"
-                              : "bg-zinc-900 border border-zinc-800 text-zinc-200 rounded-2xl rounded-tl-none"
-                          }`}
+                          key={message.id}
+                          className={`flex ${isSent ? "justify-end" : "justify-start"}`}
                         >
-                          {msg.text}
+                          <div className={`max-w-[82%] sm:max-w-[68%] ${isSent ? "items-end" : "items-start"} flex flex-col`}>
+                            <div
+                              className={`rounded-2xl px-4 py-3 text-sm leading-6 shadow-lg ${
+                                isSent
+                                  ? "rounded-br-md bg-indigo-600 text-white shadow-indigo-950/20"
+                                  : "rounded-bl-md border border-white/[0.08] bg-white/[0.06] text-zinc-200"
+                              }`}
+                            >
+                              {message.text}
+                            </div>
+                            <div className="mt-1.5 flex items-center gap-1.5 px-1 text-[10px] text-zinc-600">
+                              {formatTime(message.createdAt)}
+                              {isSent ? <CheckCheck size={13} className="text-indigo-400" /> : null}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })
+                      );
+                    })}
+                    <div ref={bottomRef} />
+                  </div>
                 )}
-                <div ref={bottomRef} />
               </div>
 
-              {/* Dynamic Input Panel */}
               <form
-                onSubmit={(e) => handleSendMessage(e, activeUser._id)}
-                className="p-4 bg-zinc-950/40 border-t border-zinc-800/60 flex items-center gap-2"
+                onSubmit={(event) => handleSendMessage(event, activeUser._id)}
+                className="border-t border-white/[0.08] bg-black/10 p-4 sm:px-7 sm:py-5"
               >
-                <div className="flex-1 bg-zinc-900/60 border border-zinc-800/80 rounded-xl px-3 py-2 flex items-center gap-2 focus-within:border-indigo-500/80 focus-within:ring-1 focus-within:ring-indigo-500/20 transition-all">
-                  <button
-                    type="button"
-                    className="text-zinc-500 hover:text-zinc-400 transition-colors"
-                  >
-                    <Paperclip size={16} />
+                <div className="flex items-center gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.04] p-2 transition focus-within:border-indigo-500/50 focus-within:ring-2 focus-within:ring-indigo-500/10">
+                  <button type="button" className="chat-input-action" aria-label="Attach file">
+                    <Paperclip size={17} />
                   </button>
-
                   <input
                     type="text"
                     value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    placeholder={`Type a message for ${activeUser.name}...`}
-                    className="flex-1 bg-transparent border-none outline-none text-xs text-zinc-200 placeholder:text-zinc-600"
+                    onChange={(event) => setInputText(event.target.value)}
+                    placeholder={`Write a message to ${activeUser.name}...`}
+                    className="min-w-0 flex-1 bg-transparent px-1 text-sm text-zinc-200 outline-none placeholder:text-zinc-600"
                   />
-
+                  <button type="button" className="chat-input-action hidden sm:block" aria-label="Add emoji">
+                    <Smile size={17} />
+                  </button>
                   <button
-                    type="button"
-                    className="text-zinc-500 hover:text-zinc-400 transition-colors hidden sm:block"
+                    type="submit"
+                    disabled={!inputText.trim()}
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-lg shadow-indigo-900/30 transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-40"
+                    aria-label="Send message"
                   >
-                    <Smile size={16} />
+                    <Send size={16} />
                   </button>
                 </div>
-
-                <button
-                  type="submit"
-                  disabled={!inputText.trim()}
-                  className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:hover:bg-indigo-600 disabled:cursor-not-allowed text-white w-9 h-9 rounded-xl flex items-center justify-center transition-all shadow-lg shadow-indigo-600/10 active:scale-95 shrink-0"
-                >
-                  <Send size={14} className="ml-0.5" />
-                </button>
+                <p className="mt-2 hidden items-center gap-1 text-[10px] text-zinc-600 sm:flex">
+                  <Info size={12} /> Messages are saved securely to your conversation.
+                </p>
               </form>
             </>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center text-zinc-600 gap-2">
-              <MessageSquare
-                size={32}
-                className="text-zinc-700 animate-pulse"
-              />
-              <span className="text-xs font-medium text-zinc-500">
-                Select a contact from the list to view chat
-              </span>
+            <div className="flex flex-1 flex-col items-center justify-center p-6 text-center">
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-3xl border border-white/[0.08] bg-white/[0.04] text-zinc-500">
+                <MessageSquare size={26} />
+              </div>
+              <h2 className="text-sm font-semibold text-zinc-300">Choose a conversation</h2>
+              <p className="mt-2 text-xs text-zinc-600">
+                Select someone from your contacts to view messages.
+              </p>
             </div>
           )}
-        </div>
+        </section>
       </div>
-    </div>
+    </main>
   );
+}
+
+function PageLoader({ label }) {
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-[#050507] text-zinc-400">
+      <div className="flex flex-col items-center gap-3">
+        <Loader2 size={28} className="animate-spin text-indigo-400" />
+        <span className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">
+          {label}
+        </span>
+      </div>
+    </main>
+  );
+}
+
+function formatTime(value) {
+  if (!value) return "Now";
+
+  return new Date(value).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
