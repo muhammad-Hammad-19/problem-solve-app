@@ -47,7 +47,7 @@ const feedSchema = new mongoose.Schema(
 
     // Tags ko array bana diya hai taake aik se zyada select ho sakein
     tags: [
-      {
+      { 
         type: String,
         enum: ["Development", "Design", "Marketing", "Database", "DevOps"],
         required: true,

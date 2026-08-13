@@ -1,26 +1,27 @@
 import { ai } from "../lib/gemini.js";
 import { Feed } from "../models/feed.model.js";
+import { Notification } from "../models/notification.model.js";
 import { feedCreateService } from "../services/feedServices.js";
 import { feedSchemaValidation } from "../validations/feed.validation.js";
 
 export const feedCreate = async (req, res) => {
   try {
     // Agar aapka auth middleware req.user set karta hai:
-    const requesterId = req.user?._id || req.user?.id; 
+    const requesterId = req.user?._id || req.user?.id;
     const requesterName = req.user?.name;
 
     const {
       title,
       description,
       skills, // Yeh string hogi frontend se: "React, Node"
-      tags,   // Backend me 'category' ki jagah 'tags' use karein
+      tags, // Backend me 'category' ki jagah 'tags' use karein
       urgency,
       location,
     } = req.body;
-
-    // String ko Array me convert karein database ke liye
-    const skillsArray = skills ? skills.split(",").map(s => s.trim()) : [];
     
+    // String ko Array me convert karein database ke liye
+    const skillsArray = skills ? skills.split(",").map((s) => s.trim()) : [];
+
     // Agar frontend se sirf 1 tag aa raha hai string me, usay array bana dein
     const tagsArray = tags ? (Array.isArray(tags) ? tags : [tags]) : [];
 
@@ -28,13 +29,20 @@ export const feedCreate = async (req, res) => {
     const result = await feedCreateService(
       title,
       description,
-      requesterId,     // NAYA: ID pass karein
+      requesterId, // NAYA: ID pass karein
       requesterName,
-      skillsArray,     // NAYA: Array pass karein
-      tagsArray,       // NAYA: tags array pass karein
+      skillsArray, // NAYA: Array pass karein
+      tagsArray, // NAYA: tags array pass karein
       urgency,
-      location
+      location,
     );
+    await Notification.create({
+      recipient: feed.userId,
+      sender: requesterId,
+      type: "NEW_HELPER",
+      feed: postId, // 👈 this IS the feed reference — already done
+      message: `${requesterName} sent a request to help with your post.`,
+    });
 
     return res.status(201).json({
       success: true,

@@ -1,10 +1,11 @@
-import { Feed } from "../models/feed.model.js";
 import { Helper } from "../models/helper.model.js";
+import { Feed } from "../models/feed.model.js";
+import { Notification } from "../models/notification.model.js"; // adjust path to your file
 
 export const requestSend = async (req, res) => {
   const requesterId = req.user?._id || req.user?.id;
   const requesterName = req.user?.name;
-  const { postId } = req.params; // ✅ fix
+  const { postId } = req.params;
 
   try {
     if (!postId || !requesterId || !requesterName) {
@@ -33,10 +34,21 @@ export const requestSend = async (req, res) => {
       isAccepted: true,
     });
 
-    await Feed.findByIdAndUpdate(postId, {
+    const feed = await Feed.findByIdAndUpdate(postId, {
       status: "In-Progress",
-      $push: { helpers: userHelper._id }, // ✅ helper ID feed mein save
+      $push: { helpers: userHelper._id },
     });
+
+    // 🔔 Notify the feed owner that someone offered to help
+    if (feed?.userId && feed.userId.toString() !== requesterId.toString()) {
+      await Notification.create({
+        recipient: feed.userId, // <-- adjust field name, see note below
+        sender: requesterId,
+        type: "NEW_HELPER",
+        feed: postId,
+        message: `${requesterName} sent a request to help with your post.`,
+      });
+    }
 
     return res.status(201).json({
       message: "Request sent successfully",
@@ -45,7 +57,6 @@ export const requestSend = async (req, res) => {
     });
   } catch (error) {
     return res.status(500).json({
-      // ✅ catch fix
       message: "Internal Server Error",
       successful: false,
       error: error.message,

@@ -12,6 +12,7 @@ import requestRouter from "./routes/requestRoutes.js";
 import helperRouter from "./routes/helperRoutes.js";
 import messageRouter from "./routes/messageRoutes.js";
 import Message from "./models/message.model.js";
+import notificationRouter from "./routes/notificationRoutes.js";
 
 dotenv.config();
 
@@ -31,6 +32,7 @@ app.use(
 
 app.use(express.json());
 
+app.use("/notifications", notificationRouter);
 app.use("/auth", authRouter);
 app.use("/feed", feedRouter);
 app.use("/user", userRouter);
