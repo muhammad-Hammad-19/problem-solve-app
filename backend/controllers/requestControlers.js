@@ -1,6 +1,6 @@
-import { Helper } from "../models/helper.model.js";
 import { Feed } from "../models/feed.model.js";
-import { Notification } from "../models/notification.model.js"; // adjust path to your file
+import { Helper } from "../models/helper.model.js";
+import { Notification } from "../models/notification.model.js";
 
 export const requestSend = async (req, res) => {
   const requesterId = req.user?._id || req.user?.id;
@@ -15,7 +15,26 @@ export const requestSend = async (req, res) => {
       });
     }
 
-    let existingRequest = await Helper.findOne({
+    // Specific feed find karo
+    const feed = await Feed.findById(postId);
+
+    if (!feed) {
+      return res.status(404).json({
+        message: "Feed not found",
+        successful: false,
+      });
+    }
+
+    // Check: apni hi post par request na bhej sake
+    if (feed.requester.toString() === requesterId.toString()) {
+      return res.status(400).json({
+        message: "You cannot send a request to your own post",
+        successful: false,
+      });
+    }
+
+    // Check existing request
+    const existingRequest = await Helper.findOne({
       postId: postId,
       helperId: requesterId,
     });
@@ -27,6 +46,7 @@ export const requestSend = async (req, res) => {
       });
     }
 
+    // Helper request create
     const userHelper = await Helper.create({
       postId,
       helperId: requesterId,
@@ -34,21 +54,22 @@ export const requestSend = async (req, res) => {
       isAccepted: true,
     });
 
-    const feed = await Feed.findByIdAndUpdate(postId, {
+    // Feed update
+    await Feed.findByIdAndUpdate(postId, {
       status: "In-Progress",
-      $push: { helpers: userHelper._id },
+      $push: {
+        helpers: userHelper._id,
+      },
     });
 
-    // 🔔 Notify the feed owner that someone offered to help
-    if (feed?.userId && feed.userId.toString() !== requesterId.toString()) {
-      await Notification.create({
-        recipient: feed.userId, // <-- adjust field name, see note below
-        sender: requesterId,
-        type: "NEW_HELPER",
-        feed: postId,
-        message: `${requesterName} sent a request to help with your post.`,
-      });
-    }
+    // 🔔 Feed owner ko notification
+    await Notification.create({
+      recipient: feed.requester,
+      sender: requesterId,
+      type: "HELPER_REQUEST",
+      feed: postId,
+      message: `${requesterName} sent you a help request`,
+    });
 
     return res.status(201).json({
       message: "Request sent successfully",

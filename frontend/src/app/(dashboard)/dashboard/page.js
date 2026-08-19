@@ -149,7 +149,7 @@ const HelplyticsDashboard = () => {
               href="/leaderboard"
             />
             <NavItem
-              icon={<Trophy size={18} />}
+              icon={<Bell size={18} />}
               label="Notification"
               href="/notification"
             />

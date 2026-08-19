@@ -1,55 +1,87 @@
 import { ai } from "../lib/gemini.js";
 import { Feed } from "../models/feed.model.js";
+import { User } from "../models/user.model.js";
 import { Notification } from "../models/notification.model.js";
 import { feedCreateService } from "../services/feedServices.js";
 import { feedSchemaValidation } from "../validations/feed.validation.js";
-
 export const feedCreate = async (req, res) => {
   try {
-    // Agar aapka auth middleware req.user set karta hai:
     const requesterId = req.user?._id || req.user?.id;
     const requesterName = req.user?.name;
 
     const {
       title,
       description,
-      skills, // Yeh string hogi frontend se: "React, Node"
-      tags, // Backend me 'category' ki jagah 'tags' use karein
+      skills,
+      tags,
       urgency,
       location,
     } = req.body;
-    
-    // String ko Array me convert karein database ke liye
-    const skillsArray = skills ? skills.split(",").map((s) => s.trim()) : [];
 
-    // Agar frontend se sirf 1 tag aa raha hai string me, usay array bana dein
-    const tagsArray = tags ? (Array.isArray(tags) ? tags : [tags]) : [];
+    const skillsArray = Array.isArray(skills)
+      ? skills.map((s) => s.trim()).filter(Boolean)
+      : skills
+        ? skills.split(",").map((s) => s.trim()).filter(Boolean)
+        : [];
 
-    // Service Call me requesterId zaroor pass karein
+    const tagsArray = Array.isArray(tags)
+      ? tags
+      : tags
+        ? [tags]
+        : [];
+
+    // 1. CREATE FEED
     const result = await feedCreateService(
       title,
       description,
-      requesterId, // NAYA: ID pass karein
+      requesterId,
       requesterName,
-      skillsArray, // NAYA: Array pass karein
-      tagsArray, // NAYA: tags array pass karein
+      skillsArray,
+      tagsArray,
       urgency,
-      location,
+      location
     );
-    await Notification.create({
-      recipient: feed.userId,
-      sender: requesterId,
-      type: "NEW_HELPER",
-      feed: postId, // 👈 this IS the feed reference — already done
-      message: `${requesterName} sent a request to help with your post.`,
-    });
 
+    // 2. FIND OTHER USERS
+    const users = await User.find(
+      {
+        _id: { $ne: requesterId },
+      },
+      {
+        _id: 1,
+      }
+    );
+
+    // 3. ONLY CREATE NOTIFICATIONS IF USERS EXIST
+    if (users.length > 0) {
+      const notifications = users.map((user) => ({
+        recipient: user._id,
+        sender: requesterId,
+        type: "NEW_FEED",
+        feed: result._id,
+        message: `${requesterName} created a new help request`,
+      }));
+
+      await Notification.insertMany(notifications);
+
+      console.log(
+        `${notifications.length} notifications created`
+      );
+    } else {
+      console.log("No other users found. No notifications created.");
+    }
+
+    // 4. RETURN CREATED FEED
     return res.status(201).json({
       success: true,
       message: "Feed created successfully",
-      data: result,
+      data: {
+        result,
+      },
     });
   } catch (error) {
+    console.error("FEED CREATE ERROR:", error);
+
     return res.status(400).json({
       success: false,
       message: error.message,

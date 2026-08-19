@@ -6,6 +6,7 @@ const notificationSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
+      index: true,
     },
 
     sender: {
@@ -15,7 +16,7 @@ const notificationSchema = new mongoose.Schema(
 
     type: {
       type: String,
-      enum: ["NEW_HELPER", "HELPER_ACCEPTED", "STATUS_CHANGED"],
+      enum: ["NEW_FEED", "HELPER_REQUEST", "HELPER_ACCEPTED", "STATUS_CHANGED"],
       required: true,
     },
 
@@ -37,5 +38,7 @@ const notificationSchema = new mongoose.Schema(
   },
   { timestamps: true },
 );
+
+notificationSchema.index({ recipient: 1, createdAt: -1 });
 
 export const Notification = mongoose.model("Notification", notificationSchema);
